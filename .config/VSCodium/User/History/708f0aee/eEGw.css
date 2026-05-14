@@ -1,0 +1,118 @@
+@import "colors/colors.css";
+
+* {
+  border: none;
+  border-radius: 0px;
+  font-family: "Adwaita Sans", "JetBrainsMono Nerd Font Propo";
+  font-size: 16px;
+  min-height: 0;
+  font-weight: bold;
+}
+
+window#waybar {
+  background: transparent;
+}
+
+.modules-right {
+  margin-right: 12px;
+}
+
+tooltip {
+  background: @surface;
+  border: 1px solid @primary;
+  border-radius: 12px;
+}
+
+tooltip label {
+  color: @on_surface;
+  padding: 6px;
+}
+
+#workspaces {
+  background: @surface;
+  padding: 8px 5px;
+  border-radius: 16px;
+  color: @on_surface;
+}
+
+#workspaces button {
+  padding: 0px 6px;
+  margin: 0px 3px;
+  border-radius: 50px;
+  color: transparent;
+  background: @surface_container;
+  transition: all 0.3s ease-in-out;
+}
+
+#workspaces button.active {
+  background-color: @primary;
+  color: @on_primary;
+  min-width: 50px;
+  transition: all 0.3s ease-in-out;
+  font-size: 13px;
+}
+
+#workspaces button:hover {
+  background-color: @secondary;
+  color: @on_secondary;
+  border-radius: 16px;
+  min-width: 50px;
+  background-size: 400% 400%;
+}
+
+#workspaces button.urgent {
+  background-color: @error;
+  color: @on_error;
+  border-radius: 16px;
+  min-width: 50px;
+  background-size: 400% 400%;
+  transition: all 0.3s ease-in-out;
+}
+
+#pulseaudio,
+#clock,
+#custom-launcher,
+#custom-notification,
+#tray-drawer {
+  background-color: @surface;
+  padding: 0 15px 0 15px;
+  margin: 0 0 0 12px;
+  border-radius: 50px;
+}
+
+#custom-launcher {
+  color: @on_surface;
+}
+
+#clock {
+  color: @primary;
+  margin: 0 0 0 20px;
+}
+
+#custom-media {
+  color: @secondary;
+}
+
+#pulseaudio {
+  color: @tertiary;
+}
+
+#network {
+  color: @tertiary_fixed;
+}
+
+#battery {
+  color: @primary_fixed;
+}
+
+#custom-home-folder {
+  color: @secondary;
+}
+
+#custom-notification {
+  color: @tertiary_fixed;
+}
+
+#tray-drawer {
+  color: @primary;
+}

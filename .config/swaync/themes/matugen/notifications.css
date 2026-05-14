@@ -1,0 +1,128 @@
+@import "/home/christoforos/.config/swaync/colors/colors.css";
+
+/* Using M3 Tokens for global pop-up colors */
+@define-color text            @on_surface;
+@define-color background      @surface;
+@define-color background-alt  @surface_container;
+@define-color selected        @primary;
+@define-color hover           @primary_container;
+@define-color urgent          @error;
+
+* {
+  color: @text;
+  all: unset;
+  font-size: 18px;
+  font-family: "JetBrainsMono Nerd Font Propo";
+  transition: 200ms;
+}
+
+.notification-row {
+  color: @text;
+  outline: none;
+  margin: 0;
+  padding: 0;
+}
+
+.floating-notifications.background .notification-row .notification-background {
+  /* Using alpha for that modern glass look */
+  background: alpha(@surface_container_low, 0.85); 
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
+  border: 1px solid @outline_variant;
+  border-radius: 17px;
+  margin: 15px 20px 10px 10px;
+  padding: 0;
+}
+
+.floating-notifications.background
+  .notification-row
+  .notification-background
+  .notification {
+  padding: 6px;
+  border-radius: 12px;
+}
+
+/* CRITICAL POP-UP: High visibility using Error Container */
+.floating-notifications.background
+  .notification-row
+  .notification-background
+  .notification.critical {
+  background-color: alpha(@error_container, 0.9);
+  border: 2px solid @error;
+}
+
+.floating-notifications.background
+  .notification-row
+  .notification-background
+  .notification.critical .summary,
+.floating-notifications.background
+  .notification-row
+  .notification-background
+  .notification.critical .body {
+  color: @on_error_container;
+}
+
+.floating-notifications.background
+  .notification-row
+  .notification-background
+  .notification
+  .notification-content {
+  margin: 14px;
+}
+
+/* ACTION BUTTONS (The buttons inside the pop-up) */
+.floating-notifications.background
+  .notification-row
+  .notification-background
+  .notification
+  > *:last-child
+  > *
+  .notification-action {
+  border-radius: 8px;
+  background-color: @surface_container_high;
+  margin: 6px;
+  border: 1px solid @outline_variant;
+}
+
+.floating-notifications.background
+  .notification-row
+  .notification-background
+  .notification
+  > *:last-child
+  > *
+  .notification-action:hover {
+  background-color: @primary;
+  color: @on_primary;
+}
+
+.floating-notifications.background
+  .notification-row
+  .notification-background
+  .notification
+  > *:last-child
+  > *
+  .notification-action:active {
+  background-color: @primary_fixed;
+  color: @on_primary_fixed;
+}
+
+/* PROGRESS BAR (e.g. for file transfers) */
+.notification.critical progress {
+  background-color: @on_error_container;
+}
+
+.notification.low progress,
+.notification.normal progress {
+  background-color: @primary;
+}
+
+/* TEXT HIERARCHY */
+.summary {
+  font-weight: 800;
+  font-size: 1rem;
+  color: @on_surface;
+}
+
+.body {
+  font-size: 0.8rem;
+  color: @on_surface_variant; /* Muted text for the body */
+}

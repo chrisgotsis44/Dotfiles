@@ -1,0 +1,6 @@
+[general]
+copy-command = "wl-copy"
+early-exit = true
+floating-hack = true
+disable-notifications = true
+actions-on-enter = ["save-to-clipboard", "exit"]

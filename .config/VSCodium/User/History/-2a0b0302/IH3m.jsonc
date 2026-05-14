@@ -1,0 +1,124 @@
+{
+    "clock": {
+        "format": "{:%H:%M}  ",
+        "format-alt": "{:%A, %B %d, %Y (%R)}  ",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+                    "mode"          : "year",
+                    "mode-mon-col"  : 3,
+                    "weeks-pos"     : "right",
+                    "on-scroll"     : 1,
+                    "format": {
+                              "months":     "<span color='#ffead3'><b>{}</b></span>",
+                              "days":       "<span color='#ecc6d9'><b>{}</b></span>",
+                              "weeks":      "<span color='#99ffdd'><b>W{}</b></span>",
+                              "weekdays":   "<span color='#ffcc66'><b>{}</b></span>",
+                              "today":      "<span color='#ff6699'><b><u>{}</u></b></span>"
+                              }
+                    },
+        "actions":  {
+                    "on-click-right": "mode",
+                    "on-scroll-up": "tz_up",
+                    "on-scroll-down": "tz_down",
+                    "on-scroll-up": "shift_up",
+                    "on-scroll-down": "shift_down"
+                    }
+    },
+
+    "hyprland/workspaces": {
+        "format": "{id}",
+        "format-icons": {
+            "active": "",
+            "default": "",
+            "urgent": ""
+        },
+        "persistent-workspaces": {
+            "*": 5
+        },
+        "on-click": "activate",
+        "on-scroll-down": "hyprctl dispatch workspace e+1",
+        "on-scroll-up": "hyprctl dispatch workspace e-1"
+    },
+
+    "pulseaudio": {
+        "format": "{volume}% {icon}",
+        "format-bluetooth": "{volume}% {icon}",
+        "format-muted": "",
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "phone-muted": "",
+            "portable": "",
+            "car": "",
+            "default": [
+                "",
+                ""
+            ]
+        },
+        "scroll-step": 1,
+        "on-click": "pulsecontrol",
+        "ignored-sinks": [
+            "Easy Effects Sink"
+        ]
+    },
+
+    "network": {
+        "interface": "wlp4s0",
+        "format": "{ifname}",
+        "format-wifi": "{essid} ",
+        "format-ethernet": "{ipaddr}/{cidr} 󰊗",
+        "format-disconnected": "", //An empty format will hide the module.
+        "tooltip-format": "{ifname} via {gwaddr} 󰊗",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%) ",
+        "tooltip-format-ethernet": "{ifname} ",
+        "tooltip-format-disconnected": "Disconnected",
+        "max-length": 50
+    },
+    
+    "battery": {
+        "format": "{capacity}% {icon}",
+        "format-icons": [
+            "",
+            "",
+            "",
+            "",
+            ""
+        ]
+    },
+
+    "power-profiles-daemon": {
+        "format": "{icon}",
+        "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+        "tooltip": true,
+        "format-icons": {
+            "default": "",
+            "performance": "",
+            "balanced": "",
+            "power-saver": ""
+        }
+    },
+    
+    "group/tray-drawer": {
+        "orientation": "horizontal",
+        "modules": [
+            "custom/tray-trigger", // The first item is always visible
+            "tray" // The rest are hidden until hovered
+        ],
+        "drawer": {
+            "transition-duration": 500,
+            "children-class": "hidden-tray",
+            "transition-left-to-right": false // Expands right-to-left
+        }
+    },
+    "custom/tray-trigger": {
+        "format": "", // A left-pointing arrow (requires a Nerd Font). You could also use "⚙"
+        "tooltip": false,
+        "icon-size": 25
+    },
+    "tray": {
+        "icon-size": 18,
+        "spacing": 10
+    }
+}

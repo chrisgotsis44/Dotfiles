@@ -1,0 +1,75 @@
+@import 'colors/colors.css';
+
+window {
+    font-family: "Adwaita Sans", "GeistMono Nerd Font Propo";
+    font-size: 20px;
+    color:  @on_surface; /* text */
+    background-color: alpha(@surface_container_low, 0.9);
+} 
+
+button {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 25%;
+    background-color: transparent;
+    animation: gradient_f 20s ease-in-out infinite;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 10px 2px transparent;
+    border-radius: 40px;
+    margin: 10px;
+    color: @on_background;
+}
+
+button:focus {
+    box-shadow: none;
+    outline-style: none;
+    background-size: 30%;
+}
+
+button:hover {
+    background-size: 60%;
+    outline-style: none;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    background-color: alpha(@primary, 0.65);
+    color: transparent;
+}
+
+#shutdown {
+    background-image: image(url("./icons/power.png"));
+}
+
+#shutdown:hover {
+  background-image: image(url("./icons/power.png"));
+}
+
+#logout {
+    background-image: image(url("./icons/logout.png"));
+}
+
+#logout:hover {
+  background-image: image(url("./icons/logout.png"));
+}
+
+#reboot {
+    background-image: image(url("./icons/restart.png"));
+}
+
+#reboot:hover {
+  background-image: image(url("./icons/restart.png"));
+}
+
+#lock {
+    background-image: image(url("./icons/lock.png"));
+}
+
+#lock:hover {
+  background-image: image(url("./icons/lock.png"));
+}
+
+#sleep {
+    background-image: image(url("./icons/hibernate.png"));
+}
+
+#sleep:hover {
+  background-image: image(url("./icons/hibernate.png"));
+}

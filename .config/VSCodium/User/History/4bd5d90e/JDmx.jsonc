@@ -1,0 +1,77 @@
+{
+    "custom/launcher": {
+        "format": "󰣇",
+        "on-click": "rofi -show drun -theme .config/rofi/launchers/apps.rasi"
+    },
+
+    "custom/notification": {
+        "tooltip": false,
+        "format": "{icon}",
+        "format-icons": {
+            "notification": "<span foreground='red'><sup></sup></span>",
+            "none": "",
+            "dnd-notification": "<span foreground='red'><sup></sup></span>",
+            "dnd-none": "",
+            "inhibited-notification": "<span foreground='red'><sup></sup></span>",
+            "inhibited-none": "",
+            "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
+            "dnd-inhibited-none": ""
+        },
+        "return-type": "json",
+        "exec-if": "which swaync-client",
+        "exec": "swaync-client -swb",
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true
+    },
+
+    "custom/mediaplayer": {
+    "exec": "~/.config/waybar/scripts/mediaplayer.py --player spotify",
+    "return-type": "json",
+    "format": "{0}",
+    "tooltip": true,
+    "on-click": "playerctl -p spotify play-pause",
+    "on-click-middle": "playerctl -p spotify next",
+    "on-scroll-up": "playerctl -p spotify volume 0.05+",
+    "on-scroll-down": "playerctl -p spotify volume 0.05-",
+    "menu": "on-click-right",
+    "menu-file": "~/.config/waybar/scripts/mediaplayer.xml",
+    "menu-actions": {
+      "play-pause": "playerctl -p spotify play-pause",
+      "next": "playerctl -p spotify next",
+      "previous": "playerctl -p spotify previous",
+      "stop": "playerctl -p spotify stop",
+      "shuffle": "playerctl -p spotify shuffle toggle",
+      "repeat": "playerctl -p spotify loop Track",
+      "loop": "playerctl -p spotify loop Playlist",
+      "disable-loop": "playerctl -p spotify loop None"
+    },
+    "restart-interval": 2
+  },
+
+    "custom/pacman": {
+        "format": "{}  ",
+        "interval": 3600, // every hour
+        "exec": "checkupdates | wc -l", // # of updates
+        "exec-if": "exit 0", // always run; consider advanced run conditions
+        "on-click": "kitty --hold 'sudo pacman -Syu'; pkill -SIGRTMIN+8 waybar", // update system
+        "signal": 8
+    },
+
+    "custom/get-weather": {
+        "exec": "${HOME}/.config/waybar/scripts/get-weather.sh Glyfada+Greece",
+        "return-type": "json",
+        "format": "{}",
+        "tooltip": true,
+        "interval": 3600
+    },
+
+    "custom/weather": {
+        "exec": "~/.config/waybar/scripts/weather.py Glyfada+Greece",
+        "return-type": "json",
+        "format": "{}",
+        "tooltip": true,
+        "interval": 1800,
+        "on-click": "xdg-open https://weather.com/weather/today/l/37.86,23.75"
+    }
+}

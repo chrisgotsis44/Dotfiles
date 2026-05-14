@@ -1,0 +1,102 @@
+@import 'colors/colors.css';
+
+* {
+    border: none;
+    font-family: "Adwaita Sans", "JetBrainsMono Nerd Font Propo", Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 600; 
+    font-size: 17px;
+    min-height: 0;
+    border-radius: 50px;
+}
+
+window#waybar {
+    background: transparent;
+}
+
+tooltip {
+    background: @bg1;
+    border: 1px solid @bg4;
+}
+
+tooltip label {
+    color: @fg;
+}
+
+.modules-left {
+    margin-left: 15px;
+}
+
+.modules-right {
+    margin-right: 15px;
+}
+
+/* Base style for the pill-shaped modules */
+#custom-launcher,
+#clock,
+#workspaces,
+#custom-notification,
+#custom-media,
+#custom-pacman,
+#custom-weather,
+#pulseaudio,
+#tray-drawer,
+#battery,
+#power-profiles-daemon,
+#network {
+    background-color: @bg1; /* Dark background per your image */
+    margin-right: 10px;
+    padding: 5px 15px;
+}
+
+/* Specific color accents to match the screenshot */
+#clock { color: @blue; }
+#custom-weather { color: @yellow; }
+#pulseaudio { color: @purple; }
+#battery { color: @green; }
+#network { color: @orange; }
+#custom-notification { color: @blue; }
+
+#power-profiles-daemon {
+    margin: 0;
+}
+
+#custom-tray-trigger,
+#tray {
+    background-color: transparent;
+    padding: 0px 5px;
+    margin: 0px;
+    box-shadow: none;
+}
+
+/* Workspaces specific styling */
+#workspaces {
+    padding: 2px 5px;
+    border-radius: 16px;
+    background-color: @bg1;
+}
+
+#workspaces button {
+    padding: 0px 6px;
+    margin: 4px 3px;
+    border-radius: 50px;
+    color: transparent;
+    background-color: @bg4; /* Dimmer dots for inactive */
+    transition: all 0.3s ease-in-out;
+}
+
+#workspaces button.active {
+    background-color: @blue; /* Highlighted pill for active */
+    color: @bg0;
+    min-width: 40px;
+    transition: all 0.3s ease-in-out;
+}
+
+#workspaces button.urgent {
+    background-color: @red;
+    color: @fg;
+}
+
+#workspaces button:hover {
+    background-color: @grey1;
+    color: @bg0;
+}

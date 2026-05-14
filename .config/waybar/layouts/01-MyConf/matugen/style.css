@@ -1,0 +1,103 @@
+@import 'colors/colors.css';
+
+* {
+    border: none;
+    font-family: "Adwaita Sans", "JetBrainsMono Nerd Font Propo", Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 600; 
+    font-size: 17px;
+    min-height: 0;
+    border-radius: 50px;
+}
+
+window#waybar {
+    background: transparent;
+}
+
+tooltip {
+    background: @surface_container;
+    border: 1px solid @surface_variant;
+}
+
+tooltip label {
+    color: @on_surface;
+}
+
+.modules-left {
+    margin-left: 15px;
+}
+
+.modules-right {
+    margin-right: 15px;
+}
+
+/* Base style for the pill-shaped modules */
+#custom-launcher,
+#clock,
+#workspaces,
+#custom-notification,
+#custom-media,
+#custom-pacman,
+#custom-weather,
+#pulseaudio,
+#tray-drawer,
+#battery,
+#power-profiles-daemon,
+#network {
+    color: @primary;
+    background-color: @surface_container; /* Dark background per your image */
+    margin-right: 10px;
+    padding: 5px 15px;
+}
+
+/* Specific color accents mapped to Matugen primary/secondary/tertiary colors */
+/*#clock { color: @primary; }
+#custom-weather { color: @secondary; }
+#pulseaudio { color: @tertiary; }
+#battery { color: @primary_fixed; }
+#network { color: @secondary_fixed; }
+#custom-notification { color: @primary; } */
+
+#power-profiles-daemon {
+    margin: 0;
+}
+
+#custom-tray-trigger,
+#tray {
+    background-color: transparent;
+    padding: 0px 5px;
+    margin: 0px;
+    box-shadow: none;
+}
+
+/* Workspaces specific styling */
+#workspaces {
+    padding: 2px 5px;
+    border-radius: 16px;
+    background-color: @surface_container;
+}
+
+#workspaces button {
+    padding: 0px 6px;
+    margin: 4px 3px;
+    border-radius: 50px;
+    color: transparent;
+    background-color: @surface_variant; /* Dimmer dots for inactive */
+    transition: all 0.3s ease-in-out;
+}
+
+#workspaces button.active {
+    background-color: @primary; /* Highlighted pill for active */
+    color: @on_primary; /* Automatically ensures high contrast text */
+    min-width: 40px;
+    transition: all 0.3s ease-in-out;
+}
+
+#workspaces button.urgent {
+    background-color: @error;
+    color: @on_error;
+}
+
+#workspaces button:hover {
+    background-color: @secondary;
+    color: @on_surface;
+}

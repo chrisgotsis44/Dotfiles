@@ -1,0 +1,87 @@
+/*****----- Configuration -----*****/
+configuration {
+    modi:                        "drun";
+    show-icons:                  true;
+    drun-display-format:         "{name}";
+    font:                        "SF Pro Text Medium 13";
+}
+
+/*****----- Global Properties -----*****/
+@import                        "../colors/colors.rasi"
+
+/*****----- Main Window -----*****/
+window {
+    transparency:                "real";
+    location:                    center;
+    anchor:                      center;
+    fullscreen:                  false;
+    width:                       1350px; 
+    /* Reduced height so there is no empty space at the bottom */
+    height:                      350px; 
+    enabled:                     true;
+    border:                      1px solid;
+    border-radius:               24px;
+    border-color:                @background-alt;
+    background-color:            @background;
+    cursor:                      "default";
+}
+
+/*****----- Main Box -----*****/
+mainbox {
+    enabled:                     true;
+    spacing:                     0px;
+    padding:                     25px;
+    background-color:            transparent;
+    children:                    [ "listview" ]; 
+}
+
+/*****----- Listview -----*****/
+listview {
+    enabled:                     true;
+    columns:                     4;
+    lines:                       1;
+    cycle:                       true;
+    dynamic:                     true;
+    scrollbar:                   false;
+    /* Changed to horizontal to help with centering without text */
+    layout:                      vertical;
+    reverse:                     false;
+    fixed-height:                false; 
+    fixed-columns:               true;
+    spacing:                     20px;
+    background-color:            transparent;
+    cursor:                      "default";
+}
+
+/*****----- Elements -----*****/
+element {
+    enabled:                     true;
+    spacing:                     0px;
+    margin:                      0px;
+    padding:                     10px;
+    border:                      2px solid;
+    border-radius:               15px;
+    border-color:                transparent;
+    background-color:            @background-alt;
+    text-color:                  @foreground;
+    orientation:                 vertical;
+    cursor:                      pointer;
+}
+
+element selected.normal {
+    background-color:            @background-alt;
+    text-color:                  @selected;
+    border-color:                @selected;
+}
+
+element-icon {
+    background-color:            transparent;
+    /* Size adjusted to fit the new window height comfortably */
+    size:                        280px;
+    cursor:                      inherit;
+    border-radius:               10px;
+}
+
+element-text {
+    enabled:                     false;
+}

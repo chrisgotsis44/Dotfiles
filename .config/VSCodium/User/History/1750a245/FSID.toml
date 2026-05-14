@@ -1,0 +1,4 @@
+[general]
+early-exit = true
+floating-hack = true
+disable-notifications = true

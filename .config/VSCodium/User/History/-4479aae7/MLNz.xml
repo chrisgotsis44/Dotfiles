@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <menu id="menu">
+    <section>
+      <item>
+        <attribute name="label">⏯️ Play / Pause</attribute>
+        <attribute name="action">play-pause</attribute>
+      </item>
+      <item>
+        <attribute name="label">⏭️ Next Track</attribute>
+        <attribute name="action">next</attribute>
+      </item>
+      <item>
+        <attribute name="label">⏮️ Previous Track</attribute>
+        <attribute name="action">previous</attribute>
+      </item>
+      <item>
+        <attribute name="label">⏹️ Stop</attribute>
+        <attribute name="action">stop</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label">🔀 Toggle Shuffle</attribute>
+        <attribute name="action">shuffle</attribute>
+      </item>
+      <item>
+        <attribute name="label">🔂 Repeat Track</attribute>
+        <attribute name="action">repeat</attribute>
+      </item>
+      <item>
+        <attribute name="label">🔁 Loop Playlist</attribute>
+        <attribute name="action">loop</attribute>
+      </item>
+      <item>
+        <attribute name="label">➡️ Disable Loop</attribute>
+        <attribute name="action">disable-loop</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

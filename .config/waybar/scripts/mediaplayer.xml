@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- Define the actual GTK Menu Widget -->
+  <object class="GtkMenu" id="menu">
+    
+    <!-- Play / Pause -->
+    <child>
+      <object class="GtkMenuItem" id="play-pause">
+        <property name="visible">True</property>
+        <property name="label">⏯️ Play / Pause</property>
+      </object>
+    </child>
+
+    <!-- Next Track -->
+    <child>
+      <object class="GtkMenuItem" id="next">
+        <property name="visible">True</property>
+        <property name="label">⏭️ Next Track</property>
+      </object>
+    </child>
+
+    <!-- Previous Track -->
+    <child>
+      <object class="GtkMenuItem" id="previous">
+        <property name="visible">True</property>
+        <property name="label">⏮️ Previous Track</property>
+      </object>
+    </child>
+
+    <!-- Stop -->
+    <child>
+      <object class="GtkMenuItem" id="stop">
+        <property name="visible">True</property>
+        <property name="label">⏹️ Stop</property>
+      </object>
+    </child>
+
+    <!-- A visual separator line -->
+    <child>
+      <object class="GtkSeparatorMenuItem">
+        <property name="visible">True</property>
+      </object>
+    </child>
+
+    <!-- Toggle Shuffle -->
+    <child>
+      <object class="GtkMenuItem" id="shuffle">
+        <property name="visible">True</property>
+        <property name="label">🔀 Toggle Shuffle</property>
+      </object>
+    </child>
+
+    <!-- Repeat Track -->
+    <child>
+      <object class="GtkMenuItem" id="repeat">
+        <property name="visible">True</property>
+        <property name="label">🔂 Repeat Track</property>
+      </object>
+    </child>
+
+    <!-- Loop Playlist -->
+    <child>
+      <object class="GtkMenuItem" id="loop">
+        <property name="visible">True</property>
+        <property name="label">🔁 Loop Playlist</property>
+      </object>
+    </child>
+
+    <!-- Disable Loop -->
+    <child>
+      <object class="GtkMenuItem" id="disable-loop">
+        <property name="visible">True</property>
+        <property name="label">➡️ Disable Loop</property>
+      </object>
+    </child>
+
+  </object>
+</interface>

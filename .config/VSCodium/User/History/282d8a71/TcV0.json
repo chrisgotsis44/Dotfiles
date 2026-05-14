@@ -1,0 +1,9 @@
+{
+    "explorer.confirmDragAndDrop": false,
+    "code-runner.runInTerminal": true,
+    "workbench.statusBar.visible": false,
+    "editor.suggest.showStatusBar": true,
+    "window.customTitleBarVisibility": "never",
+    "window.titleBarStyle": "native",
+    "window.menuBarVisibility": "toggle"
+}

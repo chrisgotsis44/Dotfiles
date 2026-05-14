@@ -1,0 +1,89 @@
+/**
+ * Wallpapers.rasi - Clean Grid Version
+ **/
+
+/*****----- Configuration -----*****/
+configuration {
+    modi:                        "drun";
+    show-icons:                  true;
+    drun-display-format:         "{name}";
+    font:                        "SF Pro Text Medium 12";
+}
+
+/*****----- Global Properties -----*****/
+/* Ensure this path is 100% correct relative to this file */
+@import                        "../colors/colors.rasi"
+
+/*****----- Main Window -----*****/
+window {
+    transparency:                "real";
+    location:                    center;
+    anchor:                      center;
+    fullscreen:                  false;
+    width:                       1100px;
+    height:                      320px;
+    enabled:                     true;
+    margin:                      0px;
+    padding:                     0px;
+    border:                      1px solid;
+    border-radius:               20px;
+    border-color:                @background-alt;
+    background-color:            @background;
+    cursor:                      "default";
+}
+
+/*****----- Main Box -----*****/
+mainbox {
+    enabled:                     true;
+    spacing:                     0px;
+    margin:                      0px;
+    padding:                     20px;
+    background-color:            transparent;
+    children:                    [ "listview" ];
+}
+
+/*****----- Listview -----*****/
+listview {
+    enabled:                     true;
+    columns:                     4;
+    lines:                       1;
+    cycle:                       true;
+    dynamic:                     true;
+    scrollbar:                   false;
+    layout:                      vertical;
+    reverse:                     false;
+    fixed-height:                true;
+    fixed-columns:               true;
+    spacing:                     20px;
+    background-color:            transparent;
+    cursor:                      "default";
+}
+
+/*****----- Elements -----*****/
+element {
+    enabled:                     true;
+    padding:                     10px;
+    border:                      2px solid;
+    border-radius:               15px;
+    border-color:                transparent;
+    background-color:            @background-alt;
+    orientation:                 vertical;
+    cursor:                      pointer;
+}
+
+element selected.normal {
+    background-color:            @background-alt;
+    text-color:                  @selected;
+    border-color:                @selected;
+}
+
+element-icon {
+    background-color:            transparent;
+    size:                        250px;
+    cursor:                      inherit;
+    border-radius:               10px;
+}
+
+element-text {
+    enabled:                     false;
+}
