@@ -1,0 +1,166 @@
+pragma Singleton
+
+import Quickshell
+import Quickshell.Services.Notifications
+import QtQuick
+
+// The single coordination point of the shell.
+//
+// Services (Audio, Media, Notifs, ...) own *system* state and push events
+// here; GlobalState owns *UI* state — which menu the island is morphed
+// into and what transient content (OSD/notification) it is flashing.
+// The Bar derives its entire state machine from this singleton, so any
+// widget anywhere can open/close a menu by flipping one property.
+Singleton {
+    id: root
+
+    // ---------------------------------------------------------------- //
+    //  Island menus (mutually exclusive — the island morphs into one)   //
+    // ---------------------------------------------------------------- //
+    property bool controlCenterOpen: false
+    property bool launcherOpen: false
+    property bool powerMenuOpen: false
+    property bool calendarOpen: false
+    property bool clipboardOpen: false
+    property bool themeMenuOpen: false
+    property bool dashboardOpen: false
+
+    // Polkit isn't a user-toggled menu -- it's driven entirely by Polkit.active
+    // (an external authentication request arriving/finishing), but it still
+    // needs to raise the island to the Overlay layer and be dismissible by
+    // the same click-away catcher as everything else, hence folding it into
+    // anyMenuOpen here rather than adding a matching toggle function.
+    readonly property bool polkitOpen: Polkit.active
+
+    readonly property bool anyMenuOpen: controlCenterOpen || launcherOpen || powerMenuOpen || calendarOpen || clipboardOpen || themeMenuOpen || dashboardOpen || polkitOpen
+
+    function closeAllMenus(): void {
+        controlCenterOpen = false;
+        launcherOpen = false;
+        powerMenuOpen = false;
+        calendarOpen = false;
+        clipboardOpen = false;
+        themeMenuOpen = false;
+        dashboardOpen = false;
+        // Clicking away from a pending auth prompt cancels it, same as
+        // clicking Cancel inside it would.
+        if (Polkit.flow)
+            Polkit.flow.cancelAuthenticationRequest();
+    }
+
+    // Opening one menu closes the others and clears any notification
+    // pill — the user is acting, the island should follow their intent.
+    function menuOpened(which: string): void {
+        if (which !== "controlcenter")
+            controlCenterOpen = false;
+        if (which !== "launcher")
+            launcherOpen = false;
+        if (which !== "power")
+            powerMenuOpen = false;
+        if (which !== "calendar")
+            calendarOpen = false;
+        if (which !== "clipboard")
+            clipboardOpen = false;
+        if (which !== "thememenu")
+            themeMenuOpen = false;
+        if (which !== "dashboard")
+            dashboardOpen = false;
+        dismissIslandNotif();
+    }
+
+    onControlCenterOpenChanged: if (controlCenterOpen) {
+        menuOpened("controlcenter");
+        osdTimer.stop();
+    }
+    onLauncherOpenChanged: if (launcherOpen) menuOpened("launcher")
+    onPowerMenuOpenChanged: if (powerMenuOpen) menuOpened("power")
+    onCalendarOpenChanged: if (calendarOpen) menuOpened("calendar")
+    onClipboardOpenChanged: if (clipboardOpen) menuOpened("clipboard")
+    onThemeMenuOpenChanged: if (themeMenuOpen) menuOpened("thememenu")
+    onDashboardOpenChanged: if (dashboardOpen) menuOpened("dashboard")
+
+    // ---------------------------------------------------------------- //
+    //  Wallpaper picker (SUPER+SHIFT+W)                                  //
+    // ---------------------------------------------------------------- //
+    // Deliberately NOT one of the island menus above: it's a full-screen
+    // overlay window in its own right (see WallpaperPicker in shell.qml),
+    // not a Section the island pill morphs into, and it isn't dismissed
+    // by the shared click-away catcher -- it has its own Escape handling.
+    property bool wallpaperPickerOpen: false
+
+    // ---------------------------------------------------------------- //
+    //  Control Center toggles                                           //
+    // ---------------------------------------------------------------- //
+    property bool dnd: false        // "Peace" — mutes island notification pills
+    property bool nightLight: false
+    property bool keepAwake: false  // "Display"
+
+    // ---------------------------------------------------------------- //
+    //  Big Island mode (SUPER+B)                                        //
+    // ---------------------------------------------------------------- //
+    // Global, not per-monitor. While true, the island statically shows
+    // the wide three-section "Big Island" layout (workspaces | clock |
+    // collapsible tray) on every screen instead of the idle clock, and
+    // the usual hover-to-expand behavior is suppressed entirely — see
+    // Bar.qml's islandState, which checks this before "hover"/"idle".
+    property bool bigIslandMode: false
+
+    function toggleBigIslandMode(): void {
+        bigIslandMode = !bigIslandMode;
+    }
+
+    // Both tiles delegate to user scripts. execDetached forks the
+    // process off the shell entirely — the UI never blocks on it.
+    // The booleans here are optimistic UI highlights; the scripts own
+    // the real system state.
+    function toggleKeepAwake(): void {
+        keepAwake = !keepAwake;
+        Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/idle-inhibitor.sh"]);
+    }
+
+    function toggleNightLight(): void {
+        nightLight = !nightLight;
+        Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/night-mode.sh"]);
+    }
+
+    // ---------------------------------------------------------------- //
+    //  Island transient states                                          //
+    // ---------------------------------------------------------------- //
+    // Priority in the Bar (highest first): notification > OSD > menu >
+    // hover > idle. Notifications preempt whatever the island shows and
+    // it morphs back to the previous state when the timer runs out.
+
+    readonly property bool osdActive: osdTimer.running
+    property Notification islandNotif: null
+
+    function showOsd(): void {
+        // The Control Center has its own slider on screen — don't
+        // morph away from it just to show the same information.
+        if (controlCenterOpen)
+            return;
+        osdTimer.restart();
+    }
+
+    function pushNotif(notif: Notification): void {
+        if (dnd)
+            return;
+        islandNotif = notif;
+        notifTimer.restart();
+    }
+
+    function dismissIslandNotif(): void {
+        notifTimer.stop();
+        islandNotif = null;
+    }
+
+    Timer {
+        id: osdTimer
+        interval: 1500
+    }
+
+    Timer {
+        id: notifTimer
+        interval: 5000
+        onTriggered: root.islandNotif = null
+    }
+}
