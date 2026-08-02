@@ -21,7 +21,13 @@ Item {
             iconSize: 26
             onClicked: {
                 GlobalState.powerMenuOpen = false;
-                Quickshell.execDetached(["loginctl", "lock-session"]);
+                // Straight to the locker rather than `loginctl
+                // lock-session`, which only locks by way of hypridle
+                // relaying the logind Lock signal into its own lock_cmd --
+                // so it silently did nothing (or ran whatever hypridle was
+                // started with) until hypridle happened to be restarted.
+                // lock.sh flocks, so this cannot stack with the keybind.
+                Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/lock.sh"]);
             }
         }
         IconButton {

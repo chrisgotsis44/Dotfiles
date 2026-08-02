@@ -1,0 +1,22 @@
+# PAM policy for the standalone Quickshell lockscreen.
+#
+# Shipped inside the config rather than /etc/pam.d so the locker depends on
+# no package at all. It used to borrow /etc/pam.d/hyprlock, which disappears
+# when hyprlock is uninstalled. Loaded via PamContext.configDirectory, which
+# maps to pam_start_confdir(3).
+#
+# The stack is spelled out rather than `include system-auth`: inside a
+# confdir PAM resolves `include` against that same directory, so the include
+# silently fails to find the system file and authentication comes back
+# PAM_PERM_DENIED. This mirrors /etc/pam.d/system-auth as shipped by Arch's
+# pam package -- notably keeping pam_faillock, so repeated wrong passwords
+# still back off exactly as they did under hyprlock.
+auth       required                    pam_faillock.so      preauth
+auth       [success=1 default=bad]     pam_unix.so          try_first_pass nullok
+auth       [default=die]               pam_faillock.so      authfail
+auth       optional                    pam_permit.so
+auth       required                    pam_env.so
+auth       required                    pam_faillock.so      authsucc
+
+account    required                    pam_faillock.so
+account    required                    pam_unix.so

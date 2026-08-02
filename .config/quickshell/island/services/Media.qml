@@ -37,9 +37,40 @@ Singleton {
     readonly property real length: active?.length ?? 0
     readonly property real progress: length > 0 ? Math.min(1, position / length) : 0
 
+    // For the media popup: which player this actually is ("Spotify",
+    // "Firefox", "mpv", ...) plus shuffle/repeat state passed through
+    // from the active player.
+    readonly property string playerName: active?.identity ?? ""
+    readonly property bool shuffleOn: active?.shuffle ?? false
+    readonly property bool shuffleSupported: active?.shuffleSupported ?? false
+    readonly property var loopState: active?.loopState ?? MprisLoopState.None
+    readonly property bool loopSupported: active?.loopSupported ?? false
+
     function isSpotify(p: MprisPlayer): bool {
         return ((p.identity ?? "") + " " + (p.desktopEntry ?? "")).toLowerCase().includes("spotify");
     }
+
+    // Browsers publish MPRIS for anything with audio -- a YouTube tab, an
+    // autoplaying ad, a Twitter video. Consumers that only make sense for
+    // an actual music session (the island's spectrum visualiser) filter
+    // on this; the media popup and Control Center card deliberately do
+    // NOT, since controlling browser playback from them is useful.
+    //
+    // A blocklist of browsers rather than an allowlist of players: an
+    // allowlist silently excludes whichever music app isn't on it, while
+    // the thing actually being excluded here is a short, well-known set.
+    // Note this also catches a browser playing Spotify Web -- it reports
+    // as the browser, not as Spotify, which is the intended outcome.
+    readonly property var browserIds: ["firefox", "chrome", "chromium", "brave", "vivaldi", "edge", "opera", "librewolf", "waterfox", "zen browser", "epiphany", "gnome web", "midori", "qutebrowser", "falkon", "thorium"]
+
+    function isBrowser(p: MprisPlayer): bool {
+        if (!p)
+            return false;
+        const s = ((p.identity ?? "") + " " + (p.desktopEntry ?? "")).toLowerCase();
+        return root.browserIds.some(b => s.includes(b));
+    }
+
+    readonly property bool activeIsBrowser: root.isBrowser(active)
 
     function updateActive(): void {
         const players = Mpris.players.values;
@@ -77,8 +108,27 @@ Singleton {
     }
 
     function seek(fraction: real): void {
-        if (active?.canSeek && length > 0)
+        if (active?.canSeek && length > 0) {
             active.position = fraction * length;
+            // Reflect the jump immediately instead of waiting up to a
+            // second for the poll timer (or indefinitely while paused).
+            position = fraction * length;
+        }
+    }
+
+    function toggleShuffle(): void {
+        if (active?.shuffleSupported)
+            active.shuffle = !active.shuffle;
+    }
+
+    // None -> Playlist -> Track -> None, skipping nothing: players that
+    // don't support looping never get here (loopSupported gates the UI).
+    function cycleLoop(): void {
+        if (!active?.loopSupported)
+            return;
+        active.loopState = active.loopState === MprisLoopState.None ? MprisLoopState.Playlist
+                         : active.loopState === MprisLoopState.Playlist ? MprisLoopState.Track
+                         : MprisLoopState.None;
     }
 
     onActiveChanged: position = active?.position ?? 0

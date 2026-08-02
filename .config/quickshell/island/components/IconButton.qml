@@ -10,6 +10,10 @@ StyledRect {
     property real size: 44
     property real iconSize: 21
     property color activeColor: Colors.accent
+    // Material Symbols' FILL axis: 0 outlined, 1 solid. Defaults to 0,
+    // which is the variable font's own default -- so every existing
+    // button renders exactly as it did before.
+    property real iconFill: 0
 
     signal clicked()
 
@@ -26,6 +30,9 @@ StyledRect {
         anchors.centerIn: parent
         text: root.icon
         font.pixelSize: root.iconSize
+        font.variableAxes: ({
+            FILL: root.iconFill
+        })
         color: root.active ? Colors.accentFg : Colors.text
     }
 

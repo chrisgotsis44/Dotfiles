@@ -15,10 +15,10 @@ hl.config({
     decoration = {
         -- Corner Rounding
         rounding = 12,
-        rounding_power = 2,
+        rounding_power = 2.10,
 
         -- Change transparency of focused and unfocused windows
-        active_opacity = 1.0,
+        active_opacity = 1.00,
         inactive_opacity = 0.85,
     },
 })

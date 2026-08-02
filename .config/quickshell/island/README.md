@@ -36,7 +36,7 @@ bind = SUPER, T,     exec, qs -c island ipc call shell toggleThemeMenu
 # back to the normal dynamic pill.
 bind = SUPER, B,       exec, qs -c island ipc call shell toggleBigIsland
 
-# System Dashboard (Customize / Performance) -- also reachable by
+# System Dashboard (Performance / Weather / Customize) -- also reachable by
 # right-clicking the pill outside a menu.
 bind = SUPER, M,       exec, qs -c island ipc call shell toggleDashboard
 bind = SUPER SHIFT, B, exec, qs -c island ipc call shell toggleDashboard
@@ -92,8 +92,9 @@ bindel = , XF86AudioMute,        exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggl
 |-----------------------------|----------------------------------------------|
 | Hover the pill              | Expands: workspaces · time/date · weather    |
 | Left-click pill             | Morph into Control Center                    |
-| Middle-click pill           | Morph into calendar                          |
+| Middle-click pill           | Morph into the media player popup            |
 | Right-click pill            | Morph into the System Dashboard              |
+| `SUPER, K`                  | Morph into calendar                          |
 | Scroll on pill              | Volume (morphs into the OSD)                 |
 | Click during notification   | Dismiss it                                   |
 | Click outside the island    | Close any open menu                          |
@@ -103,7 +104,58 @@ bindel = , XF86AudioMute,        exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggl
 | CC Wi-Fi/Audio/BT: right-click | Slide to detail list (networks/sinks/devices), Back returns |
 | Esc (in launcher)           | Close launcher                               |
 | Themes menu: click a theme, or ↑↓/j/k + Enter | Apply it (apply-theme.sh) and close the menu |
+| `SUPER, Tab`                | Window switcher (sticky: Tab/←→ cycle, Enter or click commits, Escape cancels) |
+| `ALT, Tab`                  | Window switcher (classic: hold ALT, tap Tab, release ALT to commit) |
+| Launcher `=`                | Calculator — `=8*1024`, Enter copies the result |
+| Launcher `:`                | Emoji picker — `:rocket`, Enter copies the glyph |
 | Esc (in Themes menu)        | Close without applying                       |
+
+Live Activities (`services/Activities.qml`) give the island a persistent
+compact state: while one is running the idle pill carries a chip -- glyph
+plus one live value -- on the left flank, with the clock still exactly
+centred, and hovering expands into the `activity` section (one row per
+activity, with controls) instead of the usual hover view. Activities
+outrank the media art/visualizer for that flank, since an activity is
+actionable where the spectrum is decoration. Scripts push their own:
+
+```
+qs -c island ipc call activity push   dl download "Downloading" "linux-firmware" "0%" 0
+qs -c island ipc call activity update dl "linux-firmware" "63%" 0.63
+qs -c island ipc call activity remove dl
+```
+
+Pushing an existing id updates it in place; `progress` is 0..1 or negative
+for indeterminate. Script-pushed activities get a dismiss and no transport
+controls -- the shell can't pause someone else's download.
+
+`kind` is `"task"` (default) or `"mode"`. Modes are states you have left
+switched on rather than work in progress, so they draw no progress track at
+all -- an indeterminate bar would claim something is happening.
+
+What currently produces one:
+
+| Source | Activity |
+|---|---|
+| `services/Timers.qml`   | stopwatch, countdown timer, pomodoro |
+| `services/GlobalState.qml` | Keep Awake and Peace, as modes -- **currently disabled**, see `keepAwakeActivity` / `dndActivity` |
+| `WallpaperPicker.qml`   | thumbnail generation, with a real fraction parsed from `generate-thumbs.sh`'s `TOTAL`/`PROGRESS` output |
+| `wallpaper-apply-post.sh` | matugen palette regeneration -- **currently disabled**, see `ISLAND_MATUGEN_ACTIVITY` |
+| `island-activity.sh`    | any command at all, see below |
+
+`~/.local/bin/island-activity.sh <icon> <title> -- <cmd...>` wraps an
+arbitrary long-running command:
+
+```
+island-activity.sh package "System update" -- yay -Syu
+island-activity.sh sync "Backing up" -- rsync -a ~/Documents /mnt/backup/
+```
+
+It runs the command in the background and `wait`s rather than in the
+foreground, because bash defers trap handlers until a foreground child
+finishes -- which left the chip stuck on the pill after a Ctrl-C, exactly
+when cleanup matters. `< /dev/stdin` on the async command is what keeps
+interactive commands (a password prompt) working, since a non-interactive
+shell otherwise redirects an async command's stdin from /dev/null.
 
 Notifications preempt whatever the island is showing, then it morphs
 back to the previous state after 5 s. On multi-monitor setups, only the
@@ -190,7 +242,7 @@ backed up, rewritten with whichever theme's wallpaper folder was active,
 and restored on exit by the wrapper script — and picking a wallpaper wrote
 its path to `/tmp/qs_last_wallpaper` for that same wrapper script to read
 *after the process had already exited* and do the real work (state file,
-hyprlock symlink, matugen regen). None of that works once the picker is a
+matugen regen). None of that works once the picker is a
 permanent component that never exits, so:
 
 - `modules/wallpaper/Settings.qml` replaces the rewritten-on-disk file:
@@ -203,7 +255,7 @@ permanent component that never exits, so:
   wrapper scripts' post-exit bookkeeping: `applyWallpaper()` calls it
   directly (execDetached, right alongside the awww/mpvpaper call) instead
   of writing to a temp file. It reads `.current-theme` itself and either
-  does the plain state-file/hyprlock-symlink/notify-send bookkeeping, or,
+  does the plain state-file/notify-send bookkeeping, or,
   only for the matugen theme, the full matugen regen + config-copy
   pipeline. `apply-theme.sh` also calls this directly (with `--set-live`,
   since nothing else has put the image on screen yet) when switching
@@ -260,8 +312,8 @@ ramp: `bg0`–`bg4` from `surface_container_lowest`→`...highest`, `grey0`–
 `on_surface` is M3's plain "text on background" role and is deliberately
 kept near-neutral (~25% saturation for a typical wallpaper) — next to a
 hand-picked theme's fg (catppuccin: ~64%) it reads as flat/colorless,
-most noticeably on the clock text and slider fill (both bind straight to
-`Colors.text`/`sliderFill`, i.e. `fg`). `primary_fixed` is matugen's
+most noticeably on the clock text (which binds straight to
+`Colors.text`, i.e. `fg`). `primary_fixed` is matugen's
 light-but-fully-chromatic tone from the same hue family and lands at
 roughly the same saturation as a hand-picked fg, with no saturation math
 involved — just picking the token matugen already generates for exactly
@@ -295,6 +347,16 @@ services/                 system state — all singletons
   Audio.qml               PipeWire default sink + all sinks (detail view)
   Media.qml               MPRIS w/ Spotify priority + on-disk last-session
                           cache (survives player exit and shell restarts)
+  Activities.qml          Live Activities store: ongoing things worth a
+                          glance (timer, download, recording, build). Owns
+                          no domain logic -- Timers pushes one, scripts push
+                          their own over IPC (target "activity")
+  Windows.qml             open windows via wlr-foreign-toplevel-management,
+                          plus the switcher's selection state
+  Timers.qml              stopwatch + countdown timer + pomodoro; pushes
+                          all three into Activities. Pomodoro lengths and
+                          the clock tile's mode persist to
+                          ~/.cache/qs-island-timers.json
   Weather.qml             wttr.in temp/condition/humidity/wind, 30 min
   Clipboard.qml           cliphist history + image thumbnail decoding
   Network.qml             nmcli status + network scan list + wired
@@ -378,7 +440,7 @@ modules/
                           pages), CcToggle (badgeIcon overlay -- e.g. the
                           Wi-Fi tile's ethernet badge when wired is also
                           connected), DetailView, WeatherCard (between
-                          sliders and media), MediaCard, NotifCard; the
+                          sliders and clocks), TimerTile, NotifCard; the
                           brightness slider hides when no backlight exists
   launcher/               LauncherContent -- with no query, most-launched
                           apps sort first (rofi-style); while typing, they

@@ -148,7 +148,7 @@ Item {
         let cleanName = window.getCleanName(safeFileName)
 
         const escapeBash = (str) => String(str).replace(/(["\\$`])/g, '\\$1');
-        // Bookkeeping (state file, hyprlock symlink, notify-send, and --
+        // Bookkeeping (state file, notify-send, and --
         // only for the matugen theme -- full color regeneration) used to
         // run in wallpaper-selector.sh/wallpapers-set-matugen.sh after the
         // old standalone picker process exited, reading its pick back from
@@ -172,7 +172,6 @@ Item {
                         export TRANSITION_DURATION="${Number(settings.wallpaperTransitionDuration).toFixed(2)}"
                         export TRANSITION_FPS="${Math.max(1, Number(settings.wallpaperTransitionFps))}"
 
-                        cp "$DEST_FILE" /tmp/lock_bg.png || true
                         pkill mpvpaper || true
                         ${postApply(destFile)}
 
@@ -217,8 +216,7 @@ Item {
                             cp "$TEMP_THUMB" "$FINAL_THUMB"
                             magick "$DEST_FILE" -resize x420 -quality 70 "$FINAL_THUMB" || true
 
-                            cp "$DEST_FILE" /tmp/lock_bg.png || true
-                            pkill mpvpaper || true
+                                pkill mpvpaper || true
                             ${postApply(destFile)}
 
                             # DETERMINISTIC LOOP
@@ -244,14 +242,12 @@ Item {
         const thumbFile = settings.thumbDir + "/" + safeFileName
 
         let wallpaperCmd = ""
-        let lockBgCmd = ""
 
         const escOriginal = escapeBash(originalFile);
         const escThumb = escapeBash(thumbFile);
 
         if (isVideo) {
             wallpaperCmd = `mpvpaper -o 'loop --no-audio --hwdec=auto --profile=high-quality --video-sync=display-resample --interpolation --tscale=oversample' '*' "$WALL_FILE"`
-            lockBgCmd = `cp "$THUMB_FILE" /tmp/lock_bg.png`
         } else {
             wallpaperCmd = `
                 TRANSITION="${window.pickTransition()}"
@@ -261,7 +257,6 @@ Item {
                     awww img --transition-type fade --transition-duration "$DURATION" --transition-fps "$FPS" "$WALL_FILE"
                 fi
             `
-            lockBgCmd = `cp "$WALL_FILE" /tmp/lock_bg.png`
         }
 
         const fullScript = `
@@ -270,7 +265,6 @@ Item {
                 export THUMB_FILE="${escThumb}"
 
                 echo "WALL_FILE=$WALL_FILE" > /tmp/qs_apply.log
-                ${lockBgCmd} || true
                 ${postApply(originalFile)}
 
                 if [ "${isVideo}" = "true" ]; then
@@ -324,7 +318,7 @@ Item {
     // the color-filter reset and thumbnail generation all have to be
     // re-triggered explicitly here instead.
     function onPickerOpened() {
-        Quickshell.execDetached(["bash", "-c", "generate-thumbs.sh '" + settings.wallpaperDir + "' '" + settings.thumbDir + "'"]);
+        window.generateThumbs();
 
         if (window.hasSearched) {
             window.trySearchFocus();
@@ -391,11 +385,111 @@ Item {
         Quickshell.execDetached(["bash", "-c", cmd]);
     }
 
+    // Clearing `folder` first is what actually forces a re-scan (assigning
+    // the same path back is a no-op). But a plain assignment also destroys
+    // the declarative binding these models were declared with -- and those
+    // bindings are the ONLY thing that repoints the grid when the theme
+    // changes underneath it. Once broken, the picker stays stuck on
+    // whichever theme's folder it was showing for the rest of the session,
+    // which is permanent now that the picker never exits. Reassigning
+    // through Qt.binding() restores the live binding after the re-scan.
     function reloadFolder() {
         localFolderModel.folder = "";
-        localFolderModel.folder = window.thumbDir;
+        localFolderModel.folder = Qt.binding(() => window.thumbDir);
         srcModel.folder = "";
-        srcModel.folder = "file://" + window.srcDir;
+        srcModel.folder = Qt.binding(() => "file://" + window.srcDir);
+    }
+
+    // Build the active theme's thumbnails.
+    //
+    // Tracked as a real Process rather than execDetached specifically so
+    // the folder can be re-scanned when it finishes. thumbDir is
+    // ~/.cache/wallpaper_picker/thumbs_<theme>, so switching to a theme
+    // whose thumbnails have never been built points localFolderModel at a
+    // directory that does not exist yet -- and a FolderListModel assigned
+    // a non-existent path settles into Ready with count 0 and NEVER
+    // recovers once the path appears. There is no watcher on a directory
+    // that was never there, so generate-thumbs.sh would fill the cache
+    // and the grid would stay empty for the rest of the session. Forcing
+    // a re-scan after generation is what actually makes the wallpapers
+    // show up on the first open under a new theme.
+    Process {
+        id: thumbGen
+
+        // Set from the script's TOTAL line. Zero means it found nothing to
+        // do and exited silently, which is the usual case.
+        property int thumbTotal: 0
+        property int thumbDone: 0
+
+        command: ["bash", "-c", "generate-thumbs.sh '" + settings.wallpaperDir + "' '" + settings.thumbDir + "'"]
+
+        onRunningChanged: if (running) {
+            thumbGen.thumbTotal = 0;
+            thumbGen.thumbDone = 0;
+        }
+
+        // Building a theme's cache for the first time is a real wait --
+        // 169 wallpapers on the matugen theme -- during which the grid is
+        // empty and nothing explains why. The script counts the missing
+        // thumbnails up front so this can be a genuine fraction rather
+        // than a spinner.
+        stdout: SplitParser {
+            splitMarker: "\n"
+
+            onRead: line => {
+                const parts = line.trim().split(" ");
+                if (parts[0] === "TOTAL") {
+                    thumbGen.thumbTotal = parseInt(parts[1], 10) || 0;
+                } else if (parts[0] === "PROGRESS") {
+                    thumbGen.thumbDone = parseInt(parts[1], 10) || 0;
+                } else {
+                    return;
+                }
+
+                if (thumbGen.thumbTotal <= 0)
+                    return;
+
+                Activities.push({
+                    id: "thumbs",
+                    icon: "image",
+                    title: "Thumbnails",
+                    subtitle: Colors.themeName,
+                    value: `${thumbGen.thumbDone}/${thumbGen.thumbTotal}`,
+                    progress: thumbGen.thumbDone / thumbGen.thumbTotal
+                });
+            }
+        }
+
+        onExited: {
+            Activities.remove("thumbs");
+
+            // Only when the scan came up empty -- that's the broken case.
+            // Where the directory did already exist, FolderListModel's own
+            // watcher picks new files up by itself, and re-assigning
+            // `folder` there would clear the proxy model and drop the
+            // focused item (see syncLocalModel) for no reason.
+            if (localFolderModel.count === 0)
+                window.reloadFolder();
+        }
+    }
+
+    function generateThumbs() {
+        if (!thumbGen.running)
+            thumbGen.running = true;
+    }
+
+
+    // A theme switch repoints thumbDir at a different cache directory. If
+    // it happens while the picker is already open, no onPickerOpened fires
+    // to build that directory -- which is how a theme ends up with no
+    // thumbs_<theme> cache at all, and the grid goes empty the moment the
+    // theme changes under it.
+    Connections {
+        target: settings
+        function onThumbDirChanged() {
+            if (window.visible)
+                window.generateThumbs();
+        }
     }
 
     function isDownloaded(name) {
@@ -686,7 +780,17 @@ Item {
     function triggerColorExtraction() {
         const extractScript = `
             COLOR_DIR="$HOME/.cache/wallpaper_picker/colors_markers"
-            THUMBS="$HOME/.cache/wallpaper_picker/thumbs"
+            # Must be the SAME directory the grid is showing, i.e.
+            # settings.thumbDir (~/.cache/wallpaper_picker/thumbs_<theme>).
+            # This used to be a hardcoded ~/.cache/wallpaper_picker/thumbs,
+            # which stopped existing when thumbnails became per-theme --
+            # the glob below then matched nothing, so not one _HEX_ marker
+            # was ever written, colorMap stayed empty, and every color
+            # chip fell through to "no hex -> Monochrome": the color
+            # filters looked broken because they had no data at all.
+            # Markers are keyed by thumbnail basename, which is exactly
+            # what the grid's model reports, so they line up 1:1.
+            THUMBS='${settings.thumbDir}'
             CSV="$HOME/.cache/wallpaper_picker/colors.csv"
             
             mkdir -p "$COLOR_DIR"
@@ -1595,10 +1699,18 @@ Item {
         }
     }
 
-    // One-time setup only -- this component is now permanent (constructed
-    // once at island startup, not once per open), so anything that needs
-    // to happen on every open lives in onPickerOpened() instead, fired
-    // from onVisibleChanged above.
+    // One-time setup -- anything that needs to happen on every open lives
+    // in onPickerOpened() instead, fired from onVisibleChanged above.
+    //
+    // This component is no longer constructed at island startup: shell.qml
+    // wraps it in a Loader that only builds it the first time the picker
+    // is actually opened (it's a heavy tree to pay for on every boot for a
+    // window behind SUPER+SHIFT+W). It's still permanent from then on, so
+    // the split between this and onPickerOpened() still matters -- but on
+    // that FIRST open `visible` is already true at construction, so
+    // onVisibleChanged never fires and onPickerOpened() has to be kicked
+    // off from here as well. callLater so it runs after the search-state
+    // restore just below, which it reads.
     Component.onCompleted: {
         Quickshell.execDetached(["bash", "-c", "mkdir -p '" + decodeURIComponent(window.searchDir.replace("file://", "")) + "'"]);
 
@@ -1609,6 +1721,9 @@ Item {
             window.lastSearchName = searchState.lastName;
             window.isSearchPaused = true;
         }
+
+        if (window.visible)
+            Qt.callLater(window.onPickerOpened);
     }
 
     Component.onDestruction: {

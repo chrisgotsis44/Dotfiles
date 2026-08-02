@@ -19,6 +19,7 @@ Singleton {
     property string cpuModel: ""
     property real cpuUsage: 0 // 0-1
     property int cpuTemp: 0   // °C
+    property real cpuFreqMHz: 0 // current clock, averaged across cores
 
     // ---- GPU ----
     property bool gpuAvailable: false
@@ -87,6 +88,7 @@ Singleton {
         command: ["sh", "-c", `
             head -1 /proc/stat | sed 's/^/STAT /'
             awk '/^MemTotal/{t=$2}/^MemAvailable/{a=$2}END{print "MEM",t,a}' /proc/meminfo
+            awk '/^cpu MHz/{s+=$4;n++}END{if(n>0) printf "CPUFREQ %.0f\n", s/n}' /proc/cpuinfo
             IF=$(ip -o route get 1 2>/dev/null | awk '{print $5;exit}')
             [ -n "$IF" ] && echo NET $IF $(cat /sys/class/net/$IF/statistics/rx_bytes) $(cat /sys/class/net/$IF/statistics/tx_bytes)
             for d in /sys/class/hwmon/hwmon*; do
@@ -122,6 +124,8 @@ Singleton {
                         now.tx = Number(p[3]);
                         root.totalRx = now.rx;
                         root.totalTx = now.tx;
+                    } else if (p[0] === "CPUFREQ") {
+                        root.cpuFreqMHz = Number(p[1]);
                     } else if (p[0] === "CPUTEMP") {
                         root.cpuTemp = Math.round(Number(p[1]) / 1000);
                     } else if (p[0] === "GPU") {

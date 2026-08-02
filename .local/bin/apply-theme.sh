@@ -66,14 +66,13 @@ fi
 echo "$THEME" > "$CURRENT_THEME_FILE"
 
 echo -e "${GREEN}Applying theme: $THEME${NC}\n"
-notify-send "Theme Switching" "Applying theme: $THEME" -t 3000
+#notify-send "Theme Switching" "Applying theme: $THEME" -t 3000
 
 # --- Hyprland config ---
 echo -e "${CYAN}-> Updating Hyprland configuration...${NC}"
 (
     cp "$THEME_DIR/hypr/colors.conf"                       "$CONF/hypr/colors/colors.conf"
     cp "$CONF/hypr/modules/decoration/colors/custom-themes.lua"  "$CONF/hypr/modules/decoration/colors/hyprland-colors.lua"
-    cp "$CONF/hypr/hyprlock/custom-themes.conf"            "$CONF/hypr/hyprlock.conf"
     THEME_LUA="$CONF/hypr/colors/custom/$THEME.lua"
     [ -f "$THEME_LUA" ] && echo "return require(\"colors.custom.$THEME\")" > "$CONF/hypr/colors/theme_vars.lua"
 ) &
@@ -115,7 +114,8 @@ if [ -n "$WALLPAPER" ] && [ -f "$WALLPAPER" ]; then
         pkill mpvpaper || true
         awww img "$WALLPAPER" --transition-type center --transition-fps 60 --transition-step 255 >/dev/null 2>&1
     fi
-    ln -sf "$WALLPAPER" "$CONF/hypr/hyprlock/wallpaper" >/dev/null 2>&1
+    # The lockscreen reads .current-wallpaper directly, so the old
+    # hyprlock/wallpaper symlink no longer has a consumer.
     echo "$WALLPAPER" > "$CURRENT_WALLPAPER_FILE"
 else
     echo -e "${YELLOW}   Could not set wallpaper${NC}"
@@ -154,4 +154,4 @@ echo ""
 
 reload-ui.sh
 
-notify-send "Theme Applied" "Successfully switched to: $THEME" -t 5000
+#notify-send "Theme Applied" "Successfully switched to: $THEME" -t 5000

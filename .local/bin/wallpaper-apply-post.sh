@@ -40,15 +40,16 @@ echo "$IMAGE" > "$CURRENT_WALLPAPER_FILE"
 touch "$WALLPAPER_STATE"
 sed -i "/^$THEME:/d" "$WALLPAPER_STATE"
 echo "$THEME:$IMAGE" >> "$WALLPAPER_STATE"
-ln -sf "$IMAGE" "$CONF/hypr/hyprlock/wallpaper"
+# The lockscreen reads .current-wallpaper directly; the old
+# hyprlock/wallpaper symlink no longer has a consumer.
 
 if [ "$THEME" != "matugen" ]; then
-    notify-send "Wallpaper Changed" "Applied: $(basename "$IMAGE")"
+    #notify-send "Wallpaper Changed" "Applied: $(basename "$IMAGE")"
     exit 0
 fi
 
 # matugen: full color regeneration
-notify-send "Changing Theme" "Applying new wallpaper and updating colors..."
+#notify-send "Changing Theme" "Applying new wallpaper and updating colors..."
 
 if [ -h "$CONF/gtk-4.0/gtk.css" ]; then
     rm -f "$CONF/gtk-4.0/gtk.css" "$CONF/gtk-4.0/gtk-dark.css" "$CONF/gtk-4.0/assets"
@@ -60,17 +61,36 @@ case "$IMAGE" in
         MATUGEN_TARGET="$HOME/.cache/wallpaper_picker/thumbs_matugen/$(basename "$IMAGE")" ;;
 esac
 
+# Regenerating the palette and re-theming every app takes a couple of
+# seconds during which nothing on screen says anything is happening; a Live
+# Activity can carry that on the island.
+#
+# Currently OFF. Set to 1 to bring it back -- the calls below are intact
+# and inert rather than deleted. `|| true` inside act(): the shell may not
+# be running, and a wallpaper change must never fail because a cosmetic
+# status chip could not be posted.
+ISLAND_MATUGEN_ACTIVITY=0
+
+act() { qs -c island ipc call activity "$@" >/dev/null 2>&1 || true; }
+
+if [ "$ISLAND_MATUGEN_ACTIVITY" = "1" ]; then
+    act push matugen palette "Matugen" "Regenerating palette" "" -1
+fi
+
 matugen image "$MATUGEN_TARGET" -m dark -t scheme-vibrant --prefer saturation
 
 ( echo 'return require("colors.custom.matugen")' > "$CONF/hypr/colors/theme_vars.lua"
   cp "$CONF/matugen/includes/colors.conf"       "$CONF/hypr/colors/colors.conf"
-  cp "$CONF/hypr/modules/decoration/colors/matugen.lua" "$CONF/hypr/modules/decoration/colors/hyprland-colors.lua"
-  cp "$CONF/hypr/hyprlock/matugen.conf"          "$CONF/hypr/hyprlock.conf" ) &
+  cp "$CONF/hypr/modules/decoration/colors/matugen.lua" "$CONF/hypr/modules/decoration/colors/hyprland-colors.lua" ) &
 ( gsettings set org.gnome.desktop.interface gtk-theme "adw-gtk3"
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' ) &
 ( cp "$CONF/matugen/includes/kvantum.kvconfig"   "$CONF/Kvantum/kvantum.kvconfig" ) &
 ( cp "$CONF/matugen/includes/colors-kitty.conf"  "$CONF/kitty/colors/colors.conf" ) &
 wait
 
+# Unconditional, unlike the push: cheap, and it clears a stale chip if the
+# switch above was turned off between one run and the next.
+act remove matugen
+
 reload-ui.sh
-notify-send "Theme Applied" "Wallpaper and theme updated successfully!"
+#notify-send "Theme Applied" "Wallpaper and theme updated successfully!"

@@ -35,7 +35,11 @@ Item {
             Rectangle {
                 width: root.shown * parent.width
                 height: parent.height
-                color: Colors.sliderFill
+                // Same accent as the active Control Center toggles
+                // (CcToggle's badge, ToggleSwitch's track) -- one accent
+                // color for every "this is on / this is the current
+                // value" surface in the Control Center.
+                color: Colors.accent
 
                 Behavior on width {
                     enabled: !mouse.pressed

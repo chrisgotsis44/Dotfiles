@@ -39,6 +39,7 @@ Column {
         }
 
         IconButton {
+            id: refreshButton
             visible: root.refreshable
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
@@ -47,14 +48,20 @@ Column {
             iconSize: 18
             onClicked: root.refresh()
 
-            // Gentle spin while a scan is in flight.
+            // Gentle spin while a scan is in flight. Referencing
+            // refreshButton directly rather than this animation's own
+            // implicit `target` -- the implicit target can resolve to
+            // null by the time onStopped runs (observed as a "Value is
+            // null" TypeError once Bluetooth's page started driving
+            // `busy` for real), so onStopped had nothing to reset the
+            // rotation on and the icon was left stuck mid-spin.
             RotationAnimation on rotation {
                 running: root.busy
                 from: 0
                 to: 360
                 duration: 1200
                 loops: Animation.Infinite
-                onStopped: target.rotation = 0
+                onStopped: refreshButton.rotation = 0
             }
         }
     }
@@ -65,6 +72,43 @@ Column {
         height: 380
         clip: true
         spacing: 6
+
+        // The model here is a plain JS array (Network.networks /
+        // Bluetooth.devices), reassigned wholesale on every refresh --
+        // ListView can't diff that into per-item moves the way a real
+        // ListModel could, so a re-sort (e.g. the just-connected network
+        // jumping to the top) still shows up as fresh delegates rather
+        // than existing ones sliding into place. `add`/`displaced` still
+        // give that refresh a soft fade + settle instead of a hard snap.
+        add: Transition {
+            NumberAnimation {
+                properties: "opacity"
+                from: 0
+                to: 1
+                duration: Appearance.anim.durations.normal
+            }
+            NumberAnimation {
+                properties: "y"
+                duration: Appearance.anim.durations.normal
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Appearance.anim.curves.emphasized
+            }
+        }
+        displaced: Transition {
+            NumberAnimation {
+                properties: "y"
+                duration: Appearance.anim.durations.normal
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Appearance.anim.curves.emphasized
+            }
+        }
+        remove: Transition {
+            NumberAnimation {
+                properties: "opacity"
+                to: 0
+                duration: Appearance.anim.durations.fast
+            }
+        }
 
         StyledText {
             anchors.centerIn: parent

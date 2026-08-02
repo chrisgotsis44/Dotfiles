@@ -4,10 +4,6 @@
 input_path = '~/.config/matugen/templates/kitty-colors.conf'
 output_path = '~/.config/kitty/colors/custom/matugen.conf'
 
-[templates.waybar]
-input_path = '~/.config/matugen/templates/colors.css'
-output_path = '~/.config/waybar/colors/custom/matugen.css'
-
 [templates.gtk3]
 input_path = '~/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-3.0/gtk.css'
@@ -23,18 +19,6 @@ output_path = '~/.config/hypr/colors/custom/matugen.lua'
 [templates.hyprland_config]
 input_path = '~/.config/matugen/templates/hyprland-colors.conf'
 output_path = '~/.config/hypr/colors/custom/matugen.conf'
-
-[templates.rofi]
-input_path = '~/.config/matugen/templates/rofi-colors.rasi'
-output_path = '~/.config/rofi/colors/custom/matugen.rasi'
-
-[templates.wlogout]
-input_path = '~/.config/matugen/templates/colors.css'
-output_path = '~/.config/wlogout/colors/custom/matugen.css'
-
-[templates.swaync]
-input_path = '~/.config/matugen/templates/colors.css'
-output_path = '~/.config/swaync/colors/custom/matugen.css'
 
 [templates.kvantum_kvconfig]
 input_path = '~/.config/matugen/templates/kvantum-colors.kvconfig'

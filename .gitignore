@@ -1,0 +1,29 @@
+# --- VSCodium: keep user settings, drop all Electron runtime state ---
+# Everything under VSCodium/ is browser-style cache, session and credential
+# state that churns on every launch. Only User/ settings are worth tracking.
+.config/VSCodium/*
+!.config/VSCodium/User/
+
+# ...but not the parts of User/ that hold caches or secrets.
+.config/VSCodium/User/globalStorage/
+.config/VSCodium/User/workspaceStorage/
+.config/VSCodium/User/History/
+
+# --- Generic cache / runtime junk ---
+*Cache*/
+*cache*/
+Crashpad/
+logs/
+*.log
+*.lock
+
+# --- Credential-bearing state (never belongs in a public repo) ---
+Cookies
+Cookies-journal
+Local State
+TransportSecurity
+Trust Tokens
+Trust Tokens-journal
+machineid
+*.vscdb
+*.vscdb.backup

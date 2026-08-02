@@ -33,8 +33,19 @@ Item {
         }
     }
 
-    onFlowChanged: if (flow && flow.isResponseRequired)
-        passwordField.forceActiveFocus()
+    function focusPassword(): void {
+        if (root.flow && root.flow.isResponseRequired)
+            passwordField.forceActiveFocus();
+    }
+
+    onFlowChanged: root.focusPassword()
+
+    // Bar.qml builds this section on the first authentication request of
+    // the session, by which point Polkit.flow is already set -- so the
+    // binding above starts at its final value and onFlowChanged never
+    // fires. Without this the very first prompt would come up with the
+    // password field unfocused, and you'd have to click it before typing.
+    Component.onCompleted: Qt.callLater(root.focusPassword)
 
     // Small pill button shared by Cancel / Authenticate below.
     component ActionButton: StyledRect {

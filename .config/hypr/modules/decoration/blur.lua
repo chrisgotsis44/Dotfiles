@@ -2,7 +2,7 @@ hl.config({
 
     decoration = {
         blur = {
-            enabled = true,
+            enabled = false,
             size = 15,
             passes = 3,
 

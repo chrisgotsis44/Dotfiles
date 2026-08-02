@@ -24,6 +24,7 @@ Singleton {
     property bool clipboardOpen: false
     property bool themeMenuOpen: false
     property bool dashboardOpen: false
+    property bool mediaPlayerOpen: false
 
     // Polkit isn't a user-toggled menu -- it's driven entirely by Polkit.active
     // (an external authentication request arriving/finishing), but it still
@@ -32,7 +33,7 @@ Singleton {
     // anyMenuOpen here rather than adding a matching toggle function.
     readonly property bool polkitOpen: Polkit.active
 
-    readonly property bool anyMenuOpen: controlCenterOpen || launcherOpen || powerMenuOpen || calendarOpen || clipboardOpen || themeMenuOpen || dashboardOpen || polkitOpen
+    readonly property bool anyMenuOpen: controlCenterOpen || launcherOpen || powerMenuOpen || calendarOpen || clipboardOpen || themeMenuOpen || dashboardOpen || mediaPlayerOpen || polkitOpen
 
     function closeAllMenus(): void {
         controlCenterOpen = false;
@@ -42,6 +43,7 @@ Singleton {
         clipboardOpen = false;
         themeMenuOpen = false;
         dashboardOpen = false;
+        mediaPlayerOpen = false;
         // Clicking away from a pending auth prompt cancels it, same as
         // clicking Cancel inside it would.
         if (Polkit.flow)
@@ -65,6 +67,8 @@ Singleton {
             themeMenuOpen = false;
         if (which !== "dashboard")
             dashboardOpen = false;
+        if (which !== "media")
+            mediaPlayerOpen = false;
         dismissIslandNotif();
     }
 
@@ -78,6 +82,7 @@ Singleton {
     onClipboardOpenChanged: if (clipboardOpen) menuOpened("clipboard")
     onThemeMenuOpenChanged: if (themeMenuOpen) menuOpened("thememenu")
     onDashboardOpenChanged: if (dashboardOpen) menuOpened("dashboard")
+    onMediaPlayerOpenChanged: if (mediaPlayerOpen) menuOpened("media")
 
     // ---------------------------------------------------------------- //
     //  Wallpaper picker (SUPER+SHIFT+W)                                  //
@@ -94,6 +99,52 @@ Singleton {
     property bool dnd: false        // "Peace" — mutes island notification pills
     property bool nightLight: false
     property bool keepAwake: false  // "Display"
+
+    // Both of these change how the machine behaves and then stay that way
+    // silently, which is exactly the class of thing you leave on by
+    // accident -- a suppressed lock at 3am, or notifications you never
+    // saw. Surfacing them as Live Activities means the pill carries a
+    // standing reminder for as long as they are on, and nothing at all
+    // once they are off. They are modes, not tasks, so they carry an icon
+    // and no value or progress.
+    //
+    // Both are currently OFF. Flip either to true to bring its chip back;
+    // the logic below is intact and unused rather than deleted. The
+    // remove() calls stay unconditional so flipping one off at runtime
+    // clears any chip it had already pushed.
+    readonly property bool keepAwakeActivity: false
+    readonly property bool dndActivity: false
+
+    onKeepAwakeChanged: GlobalState.syncModeActivities()
+    onDndChanged: GlobalState.syncModeActivities()
+
+    function syncModeActivities(): void {
+        if (root.keepAwake && root.keepAwakeActivity) {
+            Activities.push({
+                id: "keepawake",
+                icon: "coffee",
+                title: "Keeping awake",
+                subtitle: "Sleep and lock suppressed",
+                kind: "mode",
+                controls: "keepawake"
+            });
+        } else {
+            Activities.remove("keepawake");
+        }
+
+        if (root.dnd && root.dndActivity) {
+            Activities.push({
+                id: "dnd",
+                icon: "do_not_disturb_on",
+                title: "Peace",
+                subtitle: "Notifications muted",
+                kind: "mode",
+                controls: "dnd"
+            });
+        } else {
+            Activities.remove("dnd");
+        }
+    }
 
     // ---------------------------------------------------------------- //
     //  Big Island mode (SUPER+B)                                        //

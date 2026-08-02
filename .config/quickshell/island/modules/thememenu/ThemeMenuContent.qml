@@ -24,18 +24,25 @@ Item {
 
     // Reset to the active theme, pull fresh swatches/wallpapers, and
     // grab keyboard focus every time the menu opens.
+    function handleOpen(): void {
+        Themes.refresh();
+        root.previewTheme = Themes.activeTheme;
+        const idx = Themes.list.findIndex(t => t.name === Themes.activeTheme);
+        list.currentIndex = idx >= 0 ? idx : 0;
+        list.forceActiveFocus();
+    }
+
     Connections {
         target: GlobalState
         function onThemeMenuOpenChanged() {
-            if (GlobalState.themeMenuOpen) {
-                Themes.refresh();
-                root.previewTheme = Themes.activeTheme;
-                const idx = Themes.list.findIndex(t => t.name === Themes.activeTheme);
-                list.currentIndex = idx >= 0 ? idx : 0;
-                list.forceActiveFocus();
-            }
+            if (GlobalState.themeMenuOpen)
+                root.handleOpen();
         }
     }
+
+    // Constructed on first open, after the signal above has already
+    // fired -- see LauncherContent for the full explanation.
+    Component.onCompleted: Qt.callLater(root.handleOpen)
 
     function displayFor(name: string): string {
         const entry = Themes.list.find(t => t.name === name);

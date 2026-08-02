@@ -21,7 +21,25 @@ hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + DELETE", hl.dsp.exit())
 --hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("pkill wlogout || wlogout -b 5"))
 hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("qs -c island ipc call shell togglePowerMenu"))
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
+-- Lockscreen: ~/.config/quickshell/lock, its own Quickshell process so a
+-- fault in the island shell cannot take it down. lock.sh flocks so a second
+-- press cannot stack a second locker.
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("lock.sh"))
+
+-- Window switcher (island). Two gestures onto the same state:
+--   SUPER+Tab  sticky -- stays open, Tab/arrows cycle, Enter or a click
+--              commits, Escape cancels. Works with a plain bind.
+--   ALT+Tab    classic -- hold ALT and tap Tab, release ALT to commit.
+--              The release itself is caught inside the island, not here.
+hl.bind(mainMod .. " + Tab",           hl.dsp.exec_cmd("qs -c island ipc call switcher cycle"))
+hl.bind(mainMod .. " + SHIFT + Tab",   hl.dsp.exec_cmd("qs -c island ipc call switcher prev"))
+hl.bind("ALT + Tab",                   hl.dsp.exec_cmd("qs -c island ipc call switcher cycle"))
+hl.bind("ALT + SHIFT + Tab",           hl.dsp.exec_cmd("qs -c island ipc call switcher prev"))
+-- ALT release commits. This raced the ALT+Tab bind (separate processes,
+-- no ordering guarantee), which is now handled inside the island: a select
+-- arriving before the switcher is open is armed for 250ms rather than
+-- dropped, so the result is the same whichever process wins.
+hl.bind("ALT + Alt_L",                 hl.dsp.exec_cmd("qs -c island ipc call switcher select"), { release = true })
 hl.bind(mainMod .. " + G", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
@@ -38,6 +56,7 @@ hl.bind(mainMod .. " + A", hl.dsp.exec_cmd(menu))
 -- Dashboards
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("qs -c island ipc call shell toggleControlCenter"))
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("qs -c island ipc call shell toggleDashboard"))
+hl.bind(mainMod .. " + K", hl.dsp.exec_cmd("qs -c island ipc call shell toggleCalendar"))
 
 
 -- Custom Themes And Wallpapers

@@ -1,1 +1,1 @@
-return require("colors.custom.matugen")
+return require("colors.custom.nord-darker")

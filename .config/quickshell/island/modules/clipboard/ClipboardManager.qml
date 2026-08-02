@@ -36,17 +36,26 @@ Item {
     }
 
     // Refresh history + reset the view every time the manager opens.
+    function handleOpen(): void {
+        Clipboard.refresh();
+        search.text = "";
+        list.currentIndex = 0;
+        search.forceActiveFocus();
+    }
+
     Connections {
         target: GlobalState
         function onClipboardOpenChanged() {
-            if (GlobalState.clipboardOpen) {
-                Clipboard.refresh();
-                search.text = "";
-                list.currentIndex = 0;
-                search.forceActiveFocus();
-            }
+            if (GlobalState.clipboardOpen)
+                root.handleOpen();
         }
     }
+
+    // First open constructs this component, which means the signal above
+    // has already fired before these Connections existed -- without this
+    // the first open would show a stale (or empty) history and an
+    // unfocused search field. See LauncherContent for the same pattern.
+    Component.onCompleted: Qt.callLater(root.handleOpen)
 
     Column {
         anchors.fill: parent
