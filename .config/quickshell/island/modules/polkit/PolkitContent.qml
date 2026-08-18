@@ -74,7 +74,7 @@ Item {
             id: label_
             anchors.centerIn: parent
             text: btn.label
-            font.pixelSize: 15
+            font.pixelSize: Appearance.font.px(15)
             font.weight: 600
             color: btn.primary ? Colors.accentFg : Colors.text
         }
@@ -116,14 +116,14 @@ Item {
                     width: parent.width
                     text: "Authentication Required"
                     wrapMode: Text.Wrap
-                    font.pixelSize: 15
+                    font.pixelSize: Appearance.font.px(15)
                     font.weight: 700
                 }
                 StyledText {
                     width: parent.width
                     text: root.flow?.message ?? ""
                     wrapMode: Text.Wrap
-                    font.pixelSize: 13
+                    font.pixelSize: Appearance.font.px(13)
                     color: Colors.subtext
                 }
             }
@@ -153,7 +153,7 @@ Item {
                         id: idLabel
                         anchors.centerIn: parent
                         text: idChip.modelData.displayName || idChip.modelData.string
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.font.px(12)
                         font.weight: 600
                         color: root.flow && root.flow.selectedIdentity === idChip.modelData ? Colors.accentFg : Colors.text
                     }
@@ -185,7 +185,7 @@ Item {
                 MaterialIcon {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "lock"
-                    font.pixelSize: 18
+                    font.pixelSize: Appearance.font.px(18)
                     color: Colors.subtext
                 }
 
@@ -195,7 +195,7 @@ Item {
                     width: parent.width - 28 - 10
                     color: Colors.text
                     font.family: Appearance.font.family
-                    font.pixelSize: 15
+                    font.pixelSize: Appearance.font.px(15)
                     clip: true
                     // Most conversations are a password (responseVisible
                     // false); anything the agent marks visible (e.g. a
@@ -211,7 +211,7 @@ Item {
                     StyledText {
                         visible: passwordField.text === ""
                         text: root.flow?.inputPrompt || "Password"
-                        font.pixelSize: 15
+                        font.pixelSize: Appearance.font.px(15)
                         color: Colors.faint
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -225,7 +225,7 @@ Item {
             visible: (root.flow?.supplementaryMessage ?? "") !== ""
             text: root.flow?.supplementaryMessage ?? ""
             wrapMode: Text.Wrap
-            font.pixelSize: 12
+            font.pixelSize: Appearance.font.px(12)
             color: (root.flow?.supplementaryIsError ?? false) ? Colors.danger : Colors.subtext
         }
 

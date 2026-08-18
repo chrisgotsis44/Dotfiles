@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  HyDE — Default
+--  hyprdots' standard: slide-in windows, vertical scratchpad, borderangle ONCE
+--  (a single sweep on focus rather than a continuous loop).
+--  Use when: you want hyprdots' feel without a spinning border.
+-- ==================================================================== --
+
 -- /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  #
 --
 -- name "Default"
@@ -17,3 +24,22 @@ hl.animation({ leaf = "borderangle", enabled = true, speed = 30, bezier = "liner
 hl.animation({ leaf = "fade", enabled = true, speed = 10, bezier = "default" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "wind" })
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "wind", style = "slidevert" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- Layer surfaces (bar, launcher, notifications, the settings overlay) had no
+-- animation at all here, so they were the one thing that snapped. Fade, not
+-- slide: these surfaces run their own entrance animations internally and a
+-- compositor-side slide fights them.
+-- glowangle/shadowangle are 0.56's siblings of borderangle: same rotation, for
+-- decoration:glow:* and the shadow. Harmless when glow is off.
+-- 0.56 can animate the scratchpad's entrance and exit separately; exit is
+-- quicker, since you are already looking away from it.
+hl.animation({ leaf = "layersIn", enabled = true, speed = 3, bezier = "wind", style = "fade" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 2.4, bezier = "winOut", style = "fade" })
+hl.animation({ leaf = "glowangle", enabled = true, speed = 30, bezier = "default", style = "once" })
+hl.animation({ leaf = "shadowangle", enabled = true, speed = 30, bezier = "default", style = "once" })
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "wind" })
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 3, bezier = "wind", style = "slidevert" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.4, bezier = "winOut", style = "slidevert" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "wind" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "wind" })

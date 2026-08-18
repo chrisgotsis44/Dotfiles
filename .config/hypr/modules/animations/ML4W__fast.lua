@@ -1,3 +1,9 @@
+-- ==================================================================== --
+--  ML4W — Fast
+--  Short durations, small popin, expo-out workspaces. Built for speed over drama.
+--  Use when: you want animation present but never in the way.
+-- ==================================================================== --
+
 -- /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  #
 --
 -- name "Fast"
@@ -20,3 +26,18 @@ hl.animation({ leaf = "border", enabled = true, speed = 10, bezier = "default" }
 hl.animation({ leaf = "fade", enabled = true, speed = 2.5, bezier = "md3_decel" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 3.5, bezier = "easeOutExpo", style = "slide" })
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 3, bezier = "md3_decel", style = "slidevert" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- Layer surfaces (bar, launcher, notifications, the settings overlay) had no
+-- animation at all here, so they were the one thing that snapped. Fade, not
+-- slide: these surfaces run their own entrance animations internally and a
+-- compositor-side slide fights them.
+-- 0.56 can animate the scratchpad's entrance and exit separately; exit is
+-- quicker, since you are already looking away from it.
+hl.animation({ leaf = "layersIn", enabled = true, speed = 2.5, bezier = "md3_decel", style = "fade" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 2.0, bezier = "md3_decel", style = "fade" })
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 2.5, bezier = "md3_decel" })
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 2.5, bezier = "md3_decel", style = "slidevert" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.0, bezier = "md3_decel", style = "slidevert" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 2.5, bezier = "md3_decel" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 2.5, bezier = "md3_decel" })

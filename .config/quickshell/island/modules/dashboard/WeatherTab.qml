@@ -86,7 +86,7 @@ Item {
 
             MaterialIcon {
                 text: cell.icon
-                font.pixelSize: 19
+                font.pixelSize: Appearance.font.px(19)
                 color: Colors.accent
             }
 
@@ -98,7 +98,7 @@ Item {
                     width: parent.width
                     text: cell.label
                     elide: Text.ElideRight
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.px(11)
                     color: Colors.subtext
                 }
                 Row {
@@ -107,14 +107,14 @@ Item {
                     MonoText {
                         id: cellValue
                         text: cell.value
-                        font.pixelSize: 14
+                        font.pixelSize: Appearance.font.px(14)
                         font.weight: 600
                     }
                     StyledText {
                         anchors.baseline: cellValue.baseline
                         visible: cell.sub !== ""
                         text: cell.sub
-                        font.pixelSize: 11
+                        font.pixelSize: Appearance.font.px(11)
                         color: Colors.faint
                     }
                 }
@@ -321,26 +321,26 @@ Item {
                         MaterialIcon {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "location_on"
-                            font.pixelSize: 15
+                            font.pixelSize: Appearance.font.px(15)
                             color: Colors.accent
                         }
                         StyledText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: WeatherData.city || "Locating…"
-                            font.pixelSize: 16
+                            font.pixelSize: Appearance.font.px(16)
                             font.weight: 700
                         }
                         MonoText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: Time.time
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.font.px(12)
                             color: Colors.subtext
                         }
                     }
 
                     StyledText {
                         text: root.cur ? WeatherData.descFor(root.cur.code) : "Waiting for data…"
-                        font.pixelSize: 14
+                        font.pixelSize: Appearance.font.px(14)
                         color: Colors.subtext
                     }
                 }
@@ -354,7 +354,7 @@ Item {
                     anchors.bottomMargin: 8
                     text: root.cur ? Math.round(root.cur.temp) + "°" : "--°"
                     font.family: Appearance.font.family
-                    font.pixelSize: 58
+                    font.pixelSize: Appearance.font.px(58)
                     font.weight: 800
                 }
 
@@ -362,7 +362,7 @@ Item {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.cur ? WeatherData.iconFor(root.cur.code, root.cur.isDay) : "cloud"
-                    font.pixelSize: 76
+                    font.pixelSize: Appearance.font.px(76)
                     color: Qt.alpha(Colors.text, 0.9)
                 }
 
@@ -370,7 +370,7 @@ Item {
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
                     text: WeatherData.updatedLabel
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.px(11)
                     color: Colors.faint
                 }
             }
@@ -468,20 +468,20 @@ Item {
                                 MonoText {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: hourCell.modelData.label
-                                    font.pixelSize: 11
+                                    font.pixelSize: Appearance.font.px(11)
                                     font.weight: hourCell.index === 0 ? 700 : 400
                                     color: hourCell.index === 0 ? Colors.text : Colors.subtext
                                 }
                                 MaterialIcon {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: WeatherData.iconFor(hourCell.modelData.code, hourCell.modelData.isDay)
-                                    font.pixelSize: 19
+                                    font.pixelSize: Appearance.font.px(19)
                                     color: hourCell.index === 0 ? Colors.accent : Colors.text
                                 }
                                 MonoText {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: hourCell.modelData.precip + "%"
-                                    font.pixelSize: 10
+                                    font.pixelSize: Appearance.font.px(10)
                                     color: hourCell.modelData.precip >= 30 ? Colors.accent : Colors.faint
                                 }
                             }
@@ -570,7 +570,7 @@ Item {
                                 width: 58
                                 horizontalAlignment: Text.AlignHCenter
                                 text: Math.round(modelData.temp) + "°"
-                                font.pixelSize: 12
+                                font.pixelSize: Appearance.font.px(12)
                                 font.weight: 600
                             }
                         }
@@ -626,13 +626,13 @@ Item {
                         StyledText {
                             Layout.preferredWidth: 58
                             text: dayRow.modelData.day
-                            font.pixelSize: 13
+                            font.pixelSize: Appearance.font.px(13)
                             font.weight: dayRow.index === 0 ? 700 : 500
                         }
 
                         MaterialIcon {
                             text: WeatherData.iconFor(dayRow.modelData.code, true)
-                            font.pixelSize: 18
+                            font.pixelSize: Appearance.font.px(18)
                             color: Colors.text
                         }
 
@@ -640,7 +640,7 @@ Item {
                             Layout.preferredWidth: 40
                             horizontalAlignment: Text.AlignRight
                             text: dayRow.modelData.precip + "%"
-                            font.pixelSize: 11
+                            font.pixelSize: Appearance.font.px(11)
                             color: dayRow.modelData.precip >= 30 ? Colors.accent : Colors.faint
                         }
 
@@ -648,7 +648,7 @@ Item {
                             Layout.preferredWidth: 34
                             horizontalAlignment: Text.AlignRight
                             text: Math.round(dayRow.modelData.min) + "°"
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.font.px(12)
                             color: Colors.subtext
                         }
 
@@ -693,7 +693,7 @@ Item {
                             Layout.preferredWidth: 34
                             horizontalAlignment: Text.AlignRight
                             text: Math.round(dayRow.modelData.max) + "°"
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.font.px(12)
                             font.weight: 600
                         }
                     }
@@ -702,7 +702,7 @@ Item {
                 StyledText {
                     visible: WeatherData.daily.length === 0
                     text: "Waiting for forecast…"
-                    font.pixelSize: 13
+                    font.pixelSize: Appearance.font.px(13)
                     color: Colors.faint
                 }
             }
@@ -803,12 +803,12 @@ Item {
 
                         MonoText {
                             text: WeatherData.sunrise
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.font.px(12)
                             font.weight: 600
                         }
                         StyledText {
                             text: "Sunrise"
-                            font.pixelSize: 10
+                            font.pixelSize: Appearance.font.px(10)
                             color: Colors.faint
                         }
                     }
@@ -821,13 +821,13 @@ Item {
                         MonoText {
                             anchors.right: parent.right
                             text: WeatherData.sunset
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.font.px(12)
                             font.weight: 600
                         }
                         StyledText {
                             anchors.right: parent.right
                             text: "Sunset"
-                            font.pixelSize: 10
+                            font.pixelSize: Appearance.font.px(10)
                             color: Colors.faint
                         }
                     }
@@ -840,12 +840,12 @@ Item {
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: WeatherData.moonEmoji
-                        font.pixelSize: 38
+                        font.pixelSize: Appearance.font.px(38)
                     }
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: WeatherData.moonName || "—"
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.font.px(12)
                         font.weight: 600
                         color: Colors.subtext
                     }

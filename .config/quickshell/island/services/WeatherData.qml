@@ -3,6 +3,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.config
 
 // Full weather backend for the Dashboard's Weather tab, separate from
 // the lightweight Weather.qml (which keeps feeding the hover pill and
@@ -362,7 +363,9 @@ Singleton {
     }
 
     Timer {
-        interval: 1800000
+        // Poll interval from config.json, clamped so a hand edit can't
+        // hammer the API (or stop refreshing for a day).
+        interval: Math.max(5, Math.min(180, Config.settings.weatherRefreshMin)) * 60000
         repeat: true
         running: true
         triggeredOnStart: true

@@ -39,7 +39,7 @@ Item {
         MaterialIcon {
             anchors.centerIn: parent
             text: root.activity?.icon ?? "bolt"
-            font.pixelSize: 18
+            font.pixelSize: Appearance.font.px(18)
             color: Colors.accent
         }
     }
@@ -65,7 +65,7 @@ Item {
                 return `${t} · ${s}`;
             }
             elide: Text.ElideRight
-            font.pixelSize: 13
+            font.pixelSize: Appearance.font.px(13)
             font.weight: 600
         }
 
@@ -74,7 +74,7 @@ Item {
             visible: root.isMode && (root.activity?.subtitle ?? "") !== ""
             text: root.activity?.subtitle ?? ""
             elide: Text.ElideRight
-            font.pixelSize: 11
+            font.pixelSize: Appearance.font.px(11)
             color: Colors.subtext
         }
 
@@ -131,7 +131,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         text: root.activity?.value ?? ""
         visible: text !== ""
-        font.pixelSize: 15
+        font.pixelSize: Appearance.font.px(15)
         font.weight: 700
     }
 
@@ -155,7 +155,7 @@ Item {
             MaterialIcon {
                 anchors.centerIn: parent
                 text: mini.glyph
-                font.pixelSize: 17
+                font.pixelSize: Appearance.font.px(17)
                 font.variableAxes: ({
                     FILL: 1
                 })

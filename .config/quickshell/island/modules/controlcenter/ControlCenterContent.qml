@@ -194,6 +194,7 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
+                    visible: Config.settings.showTimer || Config.settings.showPomodoro
 
                     // One tile, two clocks: right-click switches between
                     // stopwatch and countdown. Stopwatch is the default --
@@ -201,6 +202,7 @@ Item {
                     // something useful the instant you click it.
                     TimerTile {
                         Layout.fillWidth: true
+                        visible: Config.settings.showTimer
                         hasSecondary: true
 
                         icon: Timers.isStopwatch ? "timelapse" : "timer"
@@ -241,6 +243,7 @@ Item {
 
                     TimerTile {
                         Layout.fillWidth: true
+                        visible: Config.settings.showPomodoro
                         hasSecondary: true
 
                         icon: "local_fire_department"
@@ -257,6 +260,116 @@ Item {
                         onRightClicked: Timers.pomoSkip()
                         onLeftClicked: Timers.pomoReset()
                         onSecondaryClicked: root.view = "pomodoro"
+                    }
+                }
+
+                // System update -- deliberately a slim strip rather than
+                // a tile in the grid above. It is a thing you act on
+                // occasionally, not a state you toggle, and giving it a
+                // full tile would put "run a system upgrade" one stray
+                // click away from the Wi-Fi switch. Muted while there is
+                // nothing to do; accent only when there is.
+                StyledRect {
+                    id: updateRow
+
+                    readonly property bool ready: Updates.hasUpdates
+
+                    Layout.fillWidth: true
+                    visible: Config.settings.showUpdates
+                    implicitHeight: 40
+                    radius: Appearance.rounding.small
+                    // No border. The surface tint plus the accent icon and
+                    // text already carry "there is something here"; a rim
+                    // as well made it the loudest thing in a panel where
+                    // nothing else below the toggle grid has one.
+                    color: updHover.hovered ? Colors.surfaceHover : Colors.surface
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 12
+                        spacing: 10
+
+                        MaterialIcon {
+                            id: updIcon
+
+                            text: Updates.checking ? "sync" : updateRow.ready ? "system_update_alt" : "task_alt"
+                            font.pixelSize: Appearance.font.px(17)
+                            color: updateRow.ready ? Colors.accent : Colors.subtext
+
+                            // Spins only while a check is actually in
+                            // flight, so the row is still the moment it
+                            // has an answer. The reset goes through the
+                            // icon's own id, not `target`: an animation
+                            // used as a property value source ("on
+                            // rotation") never has target set, so reading
+                            // it threw on every state change.
+                            RotationAnimation on rotation {
+                                running: Updates.checking
+                                from: 0
+                                to: 360
+                                duration: 1200
+                                loops: Animation.Infinite
+                                onRunningChanged: if (!running) updIcon.rotation = 0
+                            }
+                        }
+
+                        Column {
+                            Layout.fillWidth: true
+                            spacing: 0
+
+                            StyledText {
+                                text: updateRow.ready ? Updates.total + (Updates.total === 1 ? " update" : " updates")
+                                                      : "System update"
+                                font.pixelSize: Appearance.font.px(13)
+                                font.weight: updateRow.ready ? 700 : 500
+                            }
+                            StyledText {
+                                width: parent.width
+                                text: Updates.summary
+                                elide: Text.ElideRight
+                                font.pixelSize: Appearance.font.px(10)
+                                color: Colors.faint
+                            }
+                        }
+
+                        // Refresh the count without starting an upgrade.
+                        MaterialIcon {
+                            text: "refresh"
+                            font.pixelSize: Appearance.font.px(15)
+                            color: refreshHover.hovered ? Colors.accent : Colors.faint
+
+                            HoverHandler {
+                                id: refreshHover
+                                cursorShape: Qt.PointingHandCursor
+                            }
+                            TapHandler {
+                                onTapped: Updates.refresh()
+                            }
+                        }
+
+                        MaterialIcon {
+                            visible: updateRow.ready
+                            text: "chevron_right"
+                            font.pixelSize: Appearance.font.px(16)
+                            color: Colors.accent
+                        }
+                    }
+
+                    HoverHandler {
+                        id: updHover
+                        cursorShape: Qt.PointingHandCursor
+                    }
+                    TapHandler {
+                        // Nothing pending: the useful action is a
+                        // re-check, not launching an upgrade that would
+                        // immediately report nothing to do.
+                        onTapped: {
+                            if (updateRow.ready)
+                                Updates.runUpdate();
+                            else
+                                Updates.refresh();
+                        }
                     }
                 }
 
@@ -290,7 +403,7 @@ Item {
 
                     StyledText {
                         text: "Notifications"
-                        font.pixelSize: 15
+                        font.pixelSize: Appearance.font.px(15)
                         font.weight: 600
                     }
 
@@ -301,7 +414,7 @@ Item {
                     StyledText {
                         visible: notifList.count > 0
                         text: "Clear all"
-                        font.pixelSize: 13
+                        font.pixelSize: Appearance.font.px(13)
                         font.weight: 600
                         color: clearHover.hovered ? Colors.accent : Colors.subtext
 
@@ -331,7 +444,7 @@ Item {
                         anchors.centerIn: parent
                         visible: notifList.count === 0
                         text: "All caught up"
-                        font.pixelSize: 14
+                        font.pixelSize: Appearance.font.px(14)
                         color: Colors.faint
                     }
 
@@ -519,7 +632,7 @@ Item {
                                         id: portalLabel
                                         anchors.centerIn: parent
                                         text: "Sign in"
-                                        font.pixelSize: 12
+                                        font.pixelSize: Appearance.font.px(12)
                                         font.weight: 600
                                         color: Colors.accentFg
                                     }
@@ -570,7 +683,7 @@ Item {
                                                 : wifiRow.modelData.signal >= 45 ? "network_wifi_3_bar"
                                                 : wifiRow.modelData.signal >= 20 ? "network_wifi_2_bar"
                                                 : "network_wifi_1_bar"
-                                            font.pixelSize: 18
+                                            font.pixelSize: Appearance.font.px(18)
                                             color: wifiRow.modelData.inUse ? Colors.accent : Colors.subtext
                                         }
 
@@ -581,7 +694,7 @@ Item {
                                             anchors.centerIn: parent
                                             visible: wifiRow.isConnecting
                                             text: "sync"
-                                            font.pixelSize: 18
+                                            font.pixelSize: Appearance.font.px(18)
                                             color: Colors.accent
 
                                             SequentialAnimation on opacity {
@@ -616,7 +729,7 @@ Item {
                                             width: parent.width
                                             text: wifiRow.modelData.ssid
                                             elide: Text.ElideRight
-                                            font.pixelSize: 14
+                                            font.pixelSize: Appearance.font.px(14)
                                             font.weight: wifiRow.modelData.inUse ? 700 : 400
                                         }
 
@@ -628,7 +741,7 @@ Item {
                                             width: parent.width
                                             visible: wifiRow.isConnecting
                                             text: "Connecting…"
-                                            font.pixelSize: 11
+                                            font.pixelSize: Appearance.font.px(11)
                                             color: Colors.accent
                                         }
                                     }
@@ -636,7 +749,7 @@ Item {
                                     MaterialIcon {
                                         visible: wifiRow.modelData.secure
                                         text: "lock"
-                                        font.pixelSize: 14
+                                        font.pixelSize: Appearance.font.px(14)
                                         color: Colors.faint
                                     }
 
@@ -647,7 +760,7 @@ Item {
                                     MaterialIcon {
                                         id: checkIcon
                                         text: "check"
-                                        font.pixelSize: 14
+                                        font.pixelSize: Appearance.font.px(14)
                                         color: Colors.accent
                                         opacity: wifiRow.modelData.inUse ? 1 : 0
                                         scale: wifiRow.modelData.inUse ? 1 : 0.4
@@ -715,7 +828,7 @@ Item {
                                         MaterialIcon {
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: "lock"
-                                            font.pixelSize: 16
+                                            font.pixelSize: Appearance.font.px(16)
                                             color: Colors.subtext
                                         }
 
@@ -725,7 +838,7 @@ Item {
                                             width: parent.width - 24 - 8
                                             color: Colors.text
                                             font.family: Appearance.font.family
-                                            font.pixelSize: 14
+                                            font.pixelSize: Appearance.font.px(14)
                                             clip: true
                                             echoMode: TextInput.Password
 
@@ -735,7 +848,7 @@ Item {
                                             StyledText {
                                                 visible: pwField.text === ""
                                                 text: "Password"
-                                                font.pixelSize: 14
+                                                font.pixelSize: Appearance.font.px(14)
                                                 color: Colors.faint
                                                 anchors.verticalCenter: parent.verticalCenter
                                             }
@@ -748,7 +861,7 @@ Item {
                                     width: parent.width
                                     text: Network.connectError
                                     wrapMode: Text.Wrap
-                                    font.pixelSize: 12
+                                    font.pixelSize: Appearance.font.px(12)
                                     color: Colors.danger
                                 }
 
@@ -766,7 +879,7 @@ Item {
                                             id: cancelLabel
                                             anchors.centerIn: parent
                                             text: "Cancel"
-                                            font.pixelSize: 13
+                                            font.pixelSize: Appearance.font.px(13)
                                             font.weight: 600
                                         }
                                         HoverHandler {
@@ -789,7 +902,7 @@ Item {
                                             id: connectLabel
                                             anchors.centerIn: parent
                                             text: Network.connecting ? "Connecting…" : "Connect"
-                                            font.pixelSize: 13
+                                            font.pixelSize: Appearance.font.px(13)
                                             font.weight: 600
                                             color: Colors.accentFg
                                         }
@@ -841,14 +954,14 @@ Item {
                     StyledText {
                         anchors.centerIn: parent
                         text: "Sound"
-                        font.pixelSize: 16
+                        font.pixelSize: Appearance.font.px(16)
                         font.weight: 700
                     }
                 }
 
                 StyledText {
                     text: "Output"
-                    font.pixelSize: 13
+                    font.pixelSize: Appearance.font.px(13)
                     font.weight: 600
                     color: Colors.subtext
                 }
@@ -885,7 +998,7 @@ Item {
                                 // not an on/off toggle like Wi-Fi/Bluetooth.
                                 MaterialIcon {
                                     text: sinkRow.isDefault ? "radio_button_checked" : "radio_button_unchecked"
-                                    font.pixelSize: 18
+                                    font.pixelSize: Appearance.font.px(18)
                                     color: sinkRow.isDefault ? Colors.accent : Colors.subtext
                                 }
 
@@ -893,7 +1006,7 @@ Item {
                                     Layout.fillWidth: true
                                     text: sinkRow.modelData.description || sinkRow.modelData.name
                                     elide: Text.ElideRight
-                                    font.pixelSize: 14
+                                    font.pixelSize: Appearance.font.px(14)
                                     font.weight: sinkRow.isDefault ? 700 : 400
                                 }
                             }
@@ -915,7 +1028,7 @@ Item {
                 StyledText {
                     visible: Audio.streams.length > 0
                     text: "Apps"
-                    font.pixelSize: 13
+                    font.pixelSize: Appearance.font.px(13)
                     font.weight: 600
                     color: Colors.subtext
                 }
@@ -960,7 +1073,7 @@ Item {
 
                 StyledText {
                     text: "Input"
-                    font.pixelSize: 13
+                    font.pixelSize: Appearance.font.px(13)
                     font.weight: 600
                     color: Colors.subtext
                 }
@@ -995,7 +1108,7 @@ Item {
 
                                 MaterialIcon {
                                     text: sourceRow.isDefault ? "radio_button_checked" : "radio_button_unchecked"
-                                    font.pixelSize: 18
+                                    font.pixelSize: Appearance.font.px(18)
                                     color: sourceRow.isDefault ? Colors.accent : Colors.subtext
                                 }
 
@@ -1003,7 +1116,7 @@ Item {
                                     Layout.fillWidth: true
                                     text: sourceRow.modelData.description || sourceRow.modelData.name
                                     elide: Text.ElideRight
-                                    font.pixelSize: 14
+                                    font.pixelSize: Appearance.font.px(14)
                                     font.weight: sourceRow.isDefault ? 700 : 400
                                 }
                             }
@@ -1021,7 +1134,7 @@ Item {
                     StyledText {
                         visible: Audio.sources.length === 0
                         text: "No input devices"
-                        font.pixelSize: 13
+                        font.pixelSize: Appearance.font.px(13)
                         color: Colors.faint
                     }
                 }
@@ -1100,7 +1213,7 @@ Item {
                                 anchors.centerIn: parent
                                 visible: !btRow.isConnecting
                                 text: btRow.modelData.icon
-                                font.pixelSize: 18
+                                font.pixelSize: Appearance.font.px(18)
                                 color: btRow.modelData.connected ? Colors.accent : Colors.subtext
                             }
 
@@ -1108,7 +1221,7 @@ Item {
                                 anchors.centerIn: parent
                                 visible: btRow.isConnecting
                                 text: "sync"
-                                font.pixelSize: 18
+                                font.pixelSize: Appearance.font.px(18)
                                 color: Colors.accent
 
                                 SequentialAnimation on opacity {
@@ -1143,7 +1256,7 @@ Item {
                                 width: parent.width
                                 text: btRow.modelData.name
                                 elide: Text.ElideRight
-                                font.pixelSize: 14
+                                font.pixelSize: Appearance.font.px(14)
                                 font.weight: 600
                             }
                             StyledText {
@@ -1152,7 +1265,7 @@ Item {
                                     : btRow.modelData.connected ? "Connected"
                                     : btRow.modelData.paired ? "Paired" : "Available"
                                 elide: Text.ElideRight
-                                font.pixelSize: 11
+                                font.pixelSize: Appearance.font.px(11)
                                 color: (btRow.isConnecting || btRow.modelData.connected) ? Colors.accent : Colors.faint
                             }
                         }
@@ -1224,7 +1337,7 @@ Item {
                     StyledText {
                         anchors.centerIn: parent
                         text: "Pomodoro"
-                        font.pixelSize: 16
+                        font.pixelSize: Appearance.font.px(16)
                         font.weight: 700
                     }
                 }
@@ -1252,14 +1365,14 @@ Item {
                         MaterialIcon {
                             anchors.verticalCenter: parent.verticalCenter
                             text: lengthRow.rowIcon
-                            font.pixelSize: 20
+                            font.pixelSize: Appearance.font.px(20)
                             color: Colors.accent
                         }
 
                         StyledText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: lengthRow.rowLabel
-                            font.pixelSize: 14
+                            font.pixelSize: Appearance.font.px(14)
                             font.weight: 600
                         }
                     }
@@ -1283,7 +1396,7 @@ Item {
                             width: 62
                             horizontalAlignment: Text.AlignHCenter
                             text: Timers.fmtMins(lengthRow.mins)
-                            font.pixelSize: 14
+                            font.pixelSize: Appearance.font.px(14)
                             font.weight: 700
                         }
 
@@ -1322,7 +1435,7 @@ Item {
                     width: parent.width
                     text: `Long break every ${Timers.longEvery} focus blocks. Changes apply to the next phase, never to one already running.`
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.px(11)
                     color: Colors.subtext
                 }
             }

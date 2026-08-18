@@ -1,1 +1,1 @@
-/home/christoforos/.config/hypr/modules/animations/01default__v2.lua
+/home/christoforos/.config/hypr/modules/animations/04_Disable_Animation.lua

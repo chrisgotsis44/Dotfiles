@@ -111,7 +111,7 @@ StyledRect {
                 MaterialIcon {
                     anchors.centerIn: parent
                     text: root.running ? "pause" : "play_arrow"
-                    font.pixelSize: 19
+                    font.pixelSize: Appearance.font.px(19)
                     font.variableAxes: ({
                         FILL: 1
                     })
@@ -140,7 +140,7 @@ StyledRect {
                 StyledText {
                     text: root.label
                     elide: Text.ElideRight
-                    font.pixelSize: 14
+                    font.pixelSize: Appearance.font.px(14)
                     font.weight: 600
                 }
 
@@ -150,7 +150,7 @@ StyledRect {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: root.hasSecondary
                     text: "more_horiz"
-                    font.pixelSize: 13
+                    font.pixelSize: Appearance.font.px(13)
                     color: Colors.faint
                 }
             }
@@ -159,7 +159,7 @@ StyledRect {
                 width: parent.width
                 text: root.readout
                 elide: Text.ElideRight
-                font.pixelSize: 17
+                font.pixelSize: Appearance.font.px(17)
                 font.weight: 700
                 color: root.running ? Colors.accent : Colors.text
             }
@@ -169,7 +169,7 @@ StyledRect {
                 text: root.sub
                 elide: Text.ElideRight
                 visible: root.sub !== ""
-                font.pixelSize: 11
+                font.pixelSize: Appearance.font.px(11)
                 color: Colors.subtext
             }
         }
@@ -196,7 +196,7 @@ StyledRect {
             MaterialIcon {
                 anchors.centerIn: parent
                 text: mini.glyph
-                font.pixelSize: 16
+                font.pixelSize: Appearance.font.px(16)
                 color: Colors.subtext
             }
 

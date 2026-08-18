@@ -2,8 +2,8 @@ hl.config({
 
     general = {
         col = {
-            active_border = { colors = { blue } },
-            inactive_border = bg2,
+            active_border = { colors = { primary } },
+            inactive_border = background,
         }
     }
 

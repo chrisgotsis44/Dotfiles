@@ -1,3 +1,11 @@
+-- ==================================================================== --
+--  Riverine — Vertical
+--  Material-3 curves with VERTICAL workspace and scratchpad motion. Layer
+--  animations were commented out upstream; a gentle fade is supplied below so
+--  popups are not the one thing that snaps.
+--  Use when: you want end-4-style motion with vertical workspaces.
+-- ==================================================================== --
+
 hl.config({ animations = { enabled = true } })
 
 hl.curve("md3_decel", { type = "bezier", points = { {0.05, 0.7}, {0.1, 1} } })
@@ -22,3 +30,18 @@ hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 3, bezier = "m
 
 -- Fade
 hl.animation({ leaf = "fade", enabled = true, speed = 3, bezier = "md3_decel" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- Layer surfaces (bar, launcher, notifications, the settings overlay) had no
+-- animation at all here, so they were the one thing that snapped. Fade, not
+-- slide: these surfaces run their own entrance animations internally and a
+-- compositor-side slide fights them.
+-- 0.56 can animate the scratchpad's entrance and exit separately; exit is
+-- quicker, since you are already looking away from it.
+hl.animation({ leaf = "layersIn", enabled = true, speed = 3, bezier = "md3_decel", style = "fade" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 2.4, bezier = "md3_accel", style = "fade" })
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "md3_decel" })
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 3, bezier = "md3_decel", style = "slidevert" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.4, bezier = "md3_accel", style = "slidevert" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "md3_decel" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "md3_decel" })

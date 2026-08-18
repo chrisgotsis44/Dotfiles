@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  Maximum coverage
+--  The completeness preset: every branch of the animation tree gets an explicit
+--  value, including the fade sub-tree, popups, DPMS and zoom. Nothing falls back
+--  to a default. Use when: you are tuning and want one file that shows every knob.
+-- ==================================================================== --
+
 hl.config({ animations = { enabled = true } })
 
 hl.curve("md3_decel", { type = "bezier", points = { {0.05, 0.7}, {0.1, 1} } })
@@ -44,3 +51,14 @@ hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 3, bezier = "m
 -- Zoom
 hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "md3_decel" })
 hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "md3_decel" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- glowangle/shadowangle are 0.56's siblings of borderangle: same rotation, for
+-- decoration:glow:* and the shadow. Harmless when glow is off.
+-- 0.56 can animate the scratchpad's entrance and exit separately; exit is
+-- quicker, since you are already looking away from it.
+hl.animation({ leaf = "glowangle", enabled = true, speed = 100, bezier = "default", style = "loop" })
+hl.animation({ leaf = "shadowangle", enabled = true, speed = 100, bezier = "default", style = "loop" })
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "md3_decel" })
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 3, bezier = "md3_decel", style = "slide" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.4, bezier = "md3_accel", style = "slide" })

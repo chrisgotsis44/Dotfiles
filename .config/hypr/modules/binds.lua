@@ -53,10 +53,19 @@ hl.bind(mainMod .. " + W", hl.dsp.exec_cmd(browser))
 -- App Launcher
 hl.bind(mainMod .. " + A", hl.dsp.exec_cmd(menu))
 
+-- Character pickers. These used to be the launcher's ":" prefix mode;
+-- they are now island menus of their own, Enter copies to the clipboard.
+--   SUPER+,  emoji
+--   SUPER+.  Unicode symbols (arrows, math, box-drawing) + Nerd Font icons
+hl.bind(mainMod .. " + comma",  hl.dsp.exec_cmd("qs -c island ipc call shell toggleEmojiPicker"))
+hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("qs -c island ipc call shell toggleGlyphPicker"))
+
 -- Dashboards
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("qs -c island ipc call shell toggleControlCenter"))
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("qs -c island ipc call shell toggleDashboard"))
 hl.bind(mainMod .. " + K", hl.dsp.exec_cmd("qs -c island ipc call shell toggleCalendar"))
+-- Settings panel (centered overlay, not an island morph)
+hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("qs -c island ipc call shell toggleSettings"))
 
 
 -- Custom Themes And Wallpapers

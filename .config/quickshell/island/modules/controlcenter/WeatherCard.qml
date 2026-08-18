@@ -22,12 +22,12 @@ StyledRect {
         StyledText {
             visible: Weather.ready
             text: Weather.emoji
-            font.pixelSize: 36
+            font.pixelSize: Appearance.font.px(36)
         }
         MaterialIcon {
             visible: !Weather.ready
             text: "cloud"
-            font.pixelSize: 34
+            font.pixelSize: Appearance.font.px(34)
             color: Colors.subtext
         }
 
@@ -37,14 +37,14 @@ StyledRect {
 
             MonoText {
                 text: Weather.temp
-                font.pixelSize: 26
+                font.pixelSize: Appearance.font.px(26)
                 font.weight: 700
             }
             StyledText {
                 width: parent.width
                 text: Weather.ready ? Weather.condition : "Fetching weather…"
                 elide: Text.ElideRight
-                font.pixelSize: 13
+                font.pixelSize: Appearance.font.px(13)
                 color: Colors.subtext
             }
         }
@@ -60,13 +60,13 @@ StyledRect {
                 MaterialIcon {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "humidity_percentage"
-                    font.pixelSize: 15
+                    font.pixelSize: Appearance.font.px(15)
                     color: Colors.accent
                 }
                 MonoText {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Weather.humidity
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.font.px(12)
                     color: Colors.subtext
                 }
             }
@@ -78,13 +78,13 @@ StyledRect {
                 MaterialIcon {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "air"
-                    font.pixelSize: 15
+                    font.pixelSize: Appearance.font.px(15)
                     color: Colors.accent
                 }
                 MonoText {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Weather.wind
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.font.px(12)
                     color: Colors.subtext
                 }
             }

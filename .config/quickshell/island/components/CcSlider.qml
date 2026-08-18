@@ -13,6 +13,12 @@ Item {
 
     property real value: 0
     property string icon: ""
+    // Wheel-to-adjust, off by default. A slider that changes under the
+    // scroll wheel is a trap anywhere it sits inside something
+    // scrollable -- in the Settings panel, scrolling the page over a
+    // slider silently edited the setting instead of scrolling. Opt in
+    // per-slider where the surface does not scroll.
+    property bool wheelEnabled: false
 
     signal moved(real newValue)
 
@@ -81,6 +87,11 @@ Item {
                 update(e.x);
         }
         onWheel: w => {
+            if (!root.wheelEnabled) {
+                // Hand it back so an enclosing Flickable still scrolls.
+                w.accepted = false;
+                return;
+            }
             const step = w.angleDelta.y > 0 ? 0.05 : -0.05;
             root.moved(Math.max(0, Math.min(1, root.value + step)));
         }

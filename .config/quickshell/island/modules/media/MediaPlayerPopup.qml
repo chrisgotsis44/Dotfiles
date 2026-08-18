@@ -369,7 +369,7 @@ Item {
                     MaterialIcon {
                         anchors.centerIn: parent
                         text: "music_note"
-                        font.pixelSize: 28
+                        font.pixelSize: Appearance.font.px(28)
                         color: Colors.subtext
                         visible: !root.hasArt
                     }
@@ -414,7 +414,7 @@ Item {
                         Layout.fillWidth: true
                         text: Media.title
                         elide: Text.ElideRight
-                        font.pixelSize: 19
+                        font.pixelSize: Appearance.font.px(19)
                         font.weight: 800
                         // Slight positive tracking: at this weight over
                         // a busy blurred background, tightly-set glyphs
@@ -455,7 +455,7 @@ Item {
                             id: badgeText
                             anchors.centerIn: parent
                             text: Media.playerName
-                            font.pixelSize: 10
+                            font.pixelSize: Appearance.font.px(10)
                             font.weight: 700
                             font.letterSpacing: 0.3
                         }
@@ -466,7 +466,7 @@ Item {
                     Layout.fillWidth: true
                     text: Media.artist
                     elide: Text.ElideRight
-                    font.pixelSize: 13
+                    font.pixelSize: Appearance.font.px(13)
                     font.weight: 500
                     // Colors.subtext is a mid grey tuned for flat themed
                     // surfaces; over the art wash it was the weakest
@@ -482,7 +482,7 @@ Item {
                     Layout.fillWidth: true
                     visible: !Media.hasPlayer && Media.title !== "Nothing playing"
                     text: "Last session"
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.px(11)
                     color: Qt.alpha(Colors.text, 0.5)
                     style: Text.Outline
                     styleColor: Qt.rgba(0, 0, 0, 0.8)
@@ -807,7 +807,7 @@ Item {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignLeft
                     text: root.fmt(root.shownProgress * Media.length)
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.px(11)
                     font.weight: 600
                     color: seekArea.pressed ? Colors.accent : Qt.alpha(Colors.text, 0.75)
                     style: Text.Outline
@@ -823,7 +823,7 @@ Item {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignRight
                     text: Media.length > 0 ? root.fmt(Media.length) : "--:--"
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.px(11)
                     font.weight: 600
                     color: Qt.alpha(Colors.text, 0.75)
                     style: Text.Outline

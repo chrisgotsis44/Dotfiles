@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  Mahaveer — Me-1
+--  A large curve library with a conservative selection actually wired up: sliding
+--  windows, single-sweep borderangle, vertical scratchpad.
+--  Use when: you want a starting point with many curves ready to experiment with.
+-- ==================================================================== --
+
 -- /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  #
 --
 -- name "Me-1"
@@ -48,4 +55,15 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 7, bezier = "menu_de
 -- animation = workspaces, 1, 7, menu_decel, slidefade 15%
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 3, bezier = "md3_decel", style = "slidevert" })
 
-
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- glowangle/shadowangle are 0.56's siblings of borderangle: same rotation, for
+-- decoration:glow:* and the shadow. Harmless when glow is off.
+-- 0.56 can animate the scratchpad's entrance and exit separately; exit is
+-- quicker, since you are already looking away from it.
+hl.animation({ leaf = "glowangle", enabled = true, speed = 30, bezier = "default", style = "once" })
+hl.animation({ leaf = "shadowangle", enabled = true, speed = 30, bezier = "default", style = "once" })
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "md3_decel" })
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 3, bezier = "md3_decel", style = "slidevert" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.4, bezier = "winOut", style = "slidevert" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "md3_decel" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "md3_decel" })

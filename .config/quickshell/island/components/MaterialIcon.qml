@@ -6,7 +6,7 @@ import qs.config
 Text {
     color: Colors.text
     font.family: Appearance.font.iconFamily
-    font.pixelSize: 20
+    font.pixelSize: Appearance.font.px(20)
     verticalAlignment: Text.AlignVCenter
     horizontalAlignment: Text.AlignHCenter
 }

@@ -3,6 +3,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Services.Notifications
 import QtQuick
+import qs.config
 
 // The single coordination point of the shell.
 //
@@ -25,6 +26,30 @@ Singleton {
     property bool themeMenuOpen: false
     property bool dashboardOpen: false
     property bool mediaPlayerOpen: false
+    // Character pickers, split off the launcher's old ":" prefix mode:
+    // emoji on SUPER+, and Unicode symbols + Nerd Font icons on SUPER+.
+    property bool emojiPickerOpen: false
+    property bool glyphPickerOpen: false
+
+    // A tray item's DBus menu, morphed into like any other menu rather
+    // than opened as a platform popup -- see modules/bar/TrayMenuContent.
+    // The handle is deliberately NOT cleared on close: the Section is
+    // still crossfading out at that point and blanking it would empty the
+    // panel mid-fade. It's replaced on the next open instead, and
+    // TrayMenuContent keys its own reset off trayMenuOpen for that reason.
+    property bool trayMenuOpen: false
+    property var trayMenuHandle: null
+    property string trayMenuTitle: ""
+
+    function openTrayMenu(item): void {
+        // hasMenu false means the app exports no menu at all; opening an
+        // empty panel over the pill would just look broken.
+        if (!item || !item.hasMenu)
+            return;
+        trayMenuHandle = item.menu;
+        trayMenuTitle = item.tooltipTitle || item.title || item.id;
+        trayMenuOpen = true;
+    }
 
     // Polkit isn't a user-toggled menu -- it's driven entirely by Polkit.active
     // (an external authentication request arriving/finishing), but it still
@@ -33,7 +58,7 @@ Singleton {
     // anyMenuOpen here rather than adding a matching toggle function.
     readonly property bool polkitOpen: Polkit.active
 
-    readonly property bool anyMenuOpen: controlCenterOpen || launcherOpen || powerMenuOpen || calendarOpen || clipboardOpen || themeMenuOpen || dashboardOpen || mediaPlayerOpen || polkitOpen
+    readonly property bool anyMenuOpen: controlCenterOpen || launcherOpen || powerMenuOpen || calendarOpen || clipboardOpen || themeMenuOpen || dashboardOpen || mediaPlayerOpen || emojiPickerOpen || glyphPickerOpen || trayMenuOpen || polkitOpen
 
     function closeAllMenus(): void {
         controlCenterOpen = false;
@@ -44,6 +69,9 @@ Singleton {
         themeMenuOpen = false;
         dashboardOpen = false;
         mediaPlayerOpen = false;
+        emojiPickerOpen = false;
+        glyphPickerOpen = false;
+        trayMenuOpen = false;
         // Clicking away from a pending auth prompt cancels it, same as
         // clicking Cancel inside it would.
         if (Polkit.flow)
@@ -69,6 +97,12 @@ Singleton {
             dashboardOpen = false;
         if (which !== "media")
             mediaPlayerOpen = false;
+        if (which !== "emoji")
+            emojiPickerOpen = false;
+        if (which !== "glyph")
+            glyphPickerOpen = false;
+        if (which !== "tray")
+            trayMenuOpen = false;
         dismissIslandNotif();
     }
 
@@ -83,6 +117,9 @@ Singleton {
     onThemeMenuOpenChanged: if (themeMenuOpen) menuOpened("thememenu")
     onDashboardOpenChanged: if (dashboardOpen) menuOpened("dashboard")
     onMediaPlayerOpenChanged: if (mediaPlayerOpen) menuOpened("media")
+    onEmojiPickerOpenChanged: if (emojiPickerOpen) menuOpened("emoji")
+    onGlyphPickerOpenChanged: if (glyphPickerOpen) menuOpened("glyph")
+    onTrayMenuOpenChanged: if (trayMenuOpen) menuOpened("tray")
 
     // ---------------------------------------------------------------- //
     //  Wallpaper picker (SUPER+SHIFT+W)                                  //
@@ -92,6 +129,17 @@ Singleton {
     // not a Section the island pill morphs into, and it isn't dismissed
     // by the shared click-away catcher -- it has its own Escape handling.
     property bool wallpaperPickerOpen: false
+
+    // ---------------------------------------------------------------- //
+    //  Settings panel (SUPER+S)                                         //
+    // ---------------------------------------------------------------- //
+    // Like the wallpaper picker: its own centered overlay window (see
+    // shell.qml), NOT a Section the pill morphs into, and not part of
+    // anyMenuOpen. Opening it does close whatever island menu is up --
+    // two competing panels of controls on screen at once is noise.
+    property bool settingsOpen: false
+
+    onSettingsOpenChanged: if (settingsOpen) closeAllMenus()
 
     // ---------------------------------------------------------------- //
     //  Control Center toggles                                           //
@@ -206,12 +254,12 @@ Singleton {
 
     Timer {
         id: osdTimer
-        interval: 1500
+        interval: Config.settings.osdDurationMs
     }
 
     Timer {
         id: notifTimer
-        interval: 5000
+        interval: Config.settings.notifDurationMs
         onTriggered: root.islandNotif = null
     }
 }

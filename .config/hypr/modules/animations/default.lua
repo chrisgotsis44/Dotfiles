@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  Hyprland stock
+--  Upstream Hyprland defaults: popin 87% windows, workspaces cross-FADE with no
+--  movement at all. The calmest full preset here.
+--  Use when: you find sliding workspaces distracting.
+-- ==================================================================== --
+
 -- -- Default animations -- #
 
 hl.config({ animations = { enabled = true } })
@@ -25,3 +32,7 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "almo
 hl.animation({ leaf = "workspacesIn", enabled = true, speed = 1.21, bezier = "almostLinear", style = "fade" })
 hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
 
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "easeOutQuint" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "easeOutQuint" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "easeOutQuint" })

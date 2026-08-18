@@ -26,13 +26,13 @@ Row {
     MaterialIcon {
         anchors.verticalCenter: parent.verticalCenter
         text: Battery.icon
-        font.pixelSize: root.iconSize
+        font.pixelSize: Appearance.font.px(root.iconSize)
         color: Battery.charging ? Colors.accent : Colors.text
     }
     MonoText {
         anchors.verticalCenter: parent.verticalCenter
         text: Battery.percent + "%"
-        font.pixelSize: root.textSize
+        font.pixelSize: Appearance.font.px(root.textSize)
         font.weight: 600
         color: Colors.subtext
     }

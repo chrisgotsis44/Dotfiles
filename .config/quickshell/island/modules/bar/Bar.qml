@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
+import Quickshell.Services.SystemTray
 import qs.config
 import qs.services
 import qs.components
@@ -18,6 +19,7 @@ import qs.modules.thememenu
 import qs.modules.dashboard
 import qs.modules.polkit
 import qs.modules.media
+import qs.modules.pickers
 
 // The Dynamic Island — one pill that IS every surface of the shell.
 //
@@ -53,7 +55,9 @@ import qs.modules.media
 //   "power"           |  (GlobalState.*Open, mutually exclusive)
 //   "calendar"        |
 //   "thememenu"       |
-//   "dashboard"       /
+//   "dashboard"       |
+//   "emoji"           |  SUPER+, — emoji picker
+//   "glyph"           /  SUPER+. — Unicode symbols + Nerd Font icons
 //   "media"          /   middle-click — universal MPRIS player popup
 //   "bigisland"      SUPER+B — static wide layout (workspaces | clock |
 //                    collapsible tray), replaces hover/idle entirely
@@ -136,14 +140,30 @@ PanelWindow {
     WlrLayershell.keyboardFocus: {
         if (!onActiveMonitor)
             return WlrKeyboardFocus.None;
-        if (GlobalState.anyMenuOpen || Windows.open)
+        if (menuGrab || Windows.open)
             return WlrKeyboardFocus.Exclusive;
         return WlrKeyboardFocus.None;
     }
 
-    // Only the pill takes input; the rest of the strip is click-through.
+    // True while an open menu is holding this surface exclusive -- the
+    // condition the input mask and the click-away backdrop both key off.
+    //
+    // NOT root.inMenu: that one drops to false for the few seconds a
+    // notification or OSD preempts an open menu, while the surface stays
+    // exclusive throughout. Masking on inMenu would leave those seconds
+    // undismissable, which is a smaller version of the exact bug the
+    // backdrop exists to fix.
+    readonly property bool menuGrab: GlobalState.anyMenuOpen && onActiveMonitor
+
+    // Only the pill takes input; the rest of the strip is click-through --
+    // EXCEPT while a menu is open, when the mask widens to the whole
+    // window so the backdrop below can catch clicks outside the island.
+    // Keyed off the same menuGrab as keyboardFocus above, deliberately:
+    // the mask must be wide for exactly as long as this surface is
+    // exclusive, and tying both to one property is what stops them
+    // drifting apart again (see backdrop for what that drift cost).
     mask: Region {
-        item: island
+        item: root.menuGrab ? backdrop : island
     }
 
     // Global Escape fallback. The launcher/clipboard/theme menu/polkit
@@ -264,6 +284,12 @@ PanelWindow {
             return "dashboard";
         if (GlobalState.mediaPlayerOpen)
             return "media";
+        if (GlobalState.trayMenuOpen)
+            return "tray";
+        if (GlobalState.emojiPickerOpen)
+            return "emoji";
+        if (GlobalState.glyphPickerOpen)
+            return "glyph";
         // SUPER+B: statically replaces idle/hover with the wide Big
         // Island layout -- checked AFTER every menu/notif/osd state (those
         // still preempt it same as they would idle/hover) but BEFORE
@@ -291,8 +317,50 @@ PanelWindow {
 
     Timer {
         id: unhoverDelay
-        interval: 200
+        interval: Config.settings.hoverGraceMs
         onTriggered: root.hovering = false
+    }
+
+    // `hovering` means "the pointer is on the PILL" -- but the
+    // HoverHandler it comes from is attached to the island as a whole,
+    // and while a menu is open the island is a full-size panel. The
+    // pointer is then almost always inside it, so the latch stuck true
+    // on a hover that said nothing about the pill.
+    //
+    // islandState consults `hovering` only after every menu check, so
+    // that stale latch was inert while the menu was open and then fired
+    // the instant it closed: the island expanded into the hover strip
+    // instead of collapsing, and only reached idle ~200ms later once it
+    // had shrunk out from under the pointer and unhoverDelay ran. That
+    // detour also made the clock appear to glitch -- the hover strip
+    // carries its own clock (17px, with a date under it) and the idle
+    // pill carries another (18px, alone), so dismissing a menu
+    // crossfaded two near-identical clocks through each other.
+    //
+    // So: a panel-sized island is not allowed to latch hover at all,
+    // and closing a menu re-reads the pointer once the island is
+    // actually back at pill size -- against the geometry the user can
+    // see rather than the panel's. If the pointer really is on the
+    // collapsed pill, hover engages then, as a deliberate expansion.
+    //
+    // Keyed on menuGrab, not inMenu: inMenu drops out for the seconds a
+    // notification or OSD preempts an open menu (see menuGrab above),
+    // which would make the latch flap mid-menu.
+    onMenuGrabChanged: {
+        if (menuGrab) {
+            unhoverDelay.stop();
+            hovering = false;
+        } else {
+            hoverSettle.restart();
+        }
+    }
+
+    Timer {
+        id: hoverSettle
+        // Must outlast the island's collapse out of a menu, so the
+        // pointer is read against pill geometry rather than mid-morph.
+        interval: Appearance.anim.durations.menu
+        onTriggered: root.hovering = hover.hovered
     }
 
     // A crossfading island section. Loaders track their item's implicit
@@ -309,6 +377,8 @@ PanelWindow {
     // scroll position / selected tab, we just no longer pay for them up
     // front.
     component Section: Loader {
+        id: sec
+
         required property bool shown
 
         // Latches on first show; the binding below never goes back to
@@ -321,24 +391,95 @@ PanelWindow {
 
         active: everShown
 
+        // The content's spatial tempo is the ISLAND's spatial tempo, not
+        // a number of its own. They used to differ -- content settled in
+        // 300ms inside a box still growing for another 200 -- and the
+        // giveaway was content sitting perfectly still while its
+        // container was visibly still moving. Sharing the value is what
+        // makes the two read as one object rather than a panel with a
+        // picture crossfading inside it.
+        readonly property int spatial: root.inMenu
+            ? Appearance.anim.durations.menu
+            : island.pillDuration
+
         anchors.centerIn: parent
         opacity: shown ? 1 : 0
-        scale: shown ? 1 : 0.85
+        // 0.85 was a visible pop. The island itself is already doing the
+        // big spatial move; the content only has to agree with it, so it
+        // travels a shorter distance and lets the container carry the
+        // gesture.
+        scale: shown ? 1 : 0.96
+        // A few pixels of rise on the way in. Small enough not to read as
+        // a slide, big enough that arriving content has a direction.
+        anchors.verticalCenterOffset: shown ? 0 : 5
         visible: opacity > 0.01
 
+        // Enter and exit are deliberately NOT symmetric. With one
+        // duration for both, the outgoing and incoming sections sit at
+        // ~50% opacity together at the halfway point and you read the
+        // overlap as a double exposure. The outgoing one accelerates
+        // away in half the time instead, so the incoming has clean air
+        // to arrive into.
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.anim.durations.normal
+                duration: sec.shown ? Appearance.anim.durations.slowEffects
+                                    : Appearance.anim.durations.fastEffects
                 easing.type: Easing.BezierSpline
-                easing.bezierCurve: Appearance.anim.curves.standard
+                easing.bezierCurve: sec.shown ? Appearance.anim.curves.defaultEffects
+                                              : Appearance.anim.curves.standardAccel
             }
         }
         Behavior on scale {
             NumberAnimation {
-                duration: Appearance.anim.durations.normal
+                duration: sec.shown ? sec.spatial : Appearance.anim.durations.small
                 easing.type: Easing.BezierSpline
-                easing.bezierCurve: Appearance.anim.curves.emphasized
+                easing.bezierCurve: sec.shown ? (root.inMenu ? Appearance.anim.curves.emphasized
+                                                             : island.pillCurve)
+                                              : Appearance.anim.curves.standardAccel
             }
+        }
+        Behavior on anchors.verticalCenterOffset {
+            NumberAnimation {
+                duration: sec.shown ? sec.spatial : Appearance.anim.durations.small
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: sec.shown ? Appearance.anim.curves.emphasized
+                                              : Appearance.anim.curves.standardAccel
+            }
+        }
+    }
+
+    // Click-away dismissal: press anywhere outside the island to close
+    // whatever menu is open.
+    //
+    // This CANNOT be a separate catcher window on a lower layer, which is
+    // what it used to be (a full-screen "qs-island-dismiss" PanelWindow on
+    // WlrLayer.Top in shell.qml) and why click-away silently stopped
+    // working. Hyprland keeps a list of layer surfaces that requested
+    // exclusive keyboard interactivity, and while that list is non-empty
+    // its pointer hit-test is restricted to those surfaces alone -- worse,
+    // when the cursor is over none of them it forces the event onto one
+    // anyway rather than falling through (InputManager.cpp, "forced above
+    // all"). So from the moment a menu opened and this surface went
+    // Exclusive, EVERY press on the screen was nailed to the island's own
+    // surface and the catcher window never received a single click.
+    //
+    // Since the compositor hands us those presses regardless, the fix is
+    // to handle them here instead of trying to be hit second. Declared
+    // before the island so the island stacks above it and keeps its own
+    // clicks; only presses on genuinely empty screen reach this.
+    Item {
+        id: backdrop
+        anchors.fill: parent
+
+        MouseArea {
+            anchors.fill: parent
+            enabled: root.menuGrab
+            // Any button dismisses. While a menu is open the pointer is
+            // captured by this surface no matter which button is pressed,
+            // so a right- or middle-click outside that did nothing would
+            // just read as the shell being stuck.
+            acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
+            onPressed: GlobalState.closeAllMenus()
         }
     }
 
@@ -362,6 +503,9 @@ PanelWindow {
             case "thememenu": return themeMenuSection;
             case "dashboard": return dashboardSection;
             case "media": return mediaSection;
+            case "tray": return traySection;
+            case "emoji": return emojiSection;
+            case "glyph": return glyphSection;
             case "bigisland": return bigIslandSection;
             case "switcher": return switcherSection;
             case "activity": return activitySection;
@@ -384,10 +528,14 @@ PanelWindow {
         color: root.islandState === "bigisland" ? Colors.islandExtended : Colors.island
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.anim.durations.normal
+                duration: Appearance.anim.durations.slowEffects
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Appearance.anim.curves.slowEffects
             }
         }
-        border.width: 1
+        border.width: Config.settings.borderEnabled
+            ? Math.max(0, Math.min(6, Config.settings.borderWidth))
+            : 0
         // Accent rim while morphed into a menu. "media" used to be
         // excluded here: that popup's background was a feathered mask
         // fading to transparent inside the island's own bounds, so the
@@ -395,34 +543,78 @@ PanelWindow {
         // around it. The popup now paints an opaque surface right out to
         // the island's edge, so the rim lands on the card itself and
         // belongs again, exactly like every other menu.
+        //
+        // Both opacities come from config.json. The base rim is derived
+        // from the palette's own border colour rather than a literal, so
+        // it still follows whichever theme is active.
         border.color: GlobalState.anyMenuOpen && root.onActiveMonitor
-            ? Qt.alpha(Colors.accent, 0.45)
-            : Colors.islandBorder
+            && Config.settings.borderAccentOnMenu
+            ? Qt.alpha(Colors.accent, Config.settings.borderAccentOpacity)
+            : Qt.rgba(Colors.islandBorder.r, Colors.islandBorder.g,
+                      Colors.islandBorder.b, Config.settings.borderOpacity)
+
+        // Pill morphs run on the FAST spatial token -- 350ms with a
+        // pronounced overshoot -- rather than the old 500ms. Idle, hover
+        // and the OSD are small, frequent, and where the island spends
+        // almost all of its life; half a second to grow into a hover
+        // strip reads as the shell thinking about it. The overshoot is
+        // what sells it as one physical object stretching.
+        //
+        // This is the one genuinely subjective call in the motion system,
+        // and it is a two-word revert: swap `fastSpatial` for
+        // `defaultSpatial` in both Behaviors below (500ms, gentler 1.21
+        // overshoot instead of 1.67) to go back to the old character
+        // while keeping everything else. Strictly, M3 would pair a ~420px
+        // move with defaultSpatial and reserve fastSpatial for smaller
+        // ones -- 350ms wins here anyway because hover feedback that
+        // takes half a second stops reading as feedback.
+        //
+        // Menus keep the pure decelerate curve at 550ms. That is not an
+        // oversight -- an expressive curve on a 700px panel overshoots by
+        // ~70px, and a decelerate curve is also the only family that
+        // reaches full size EARLY, which is what keeps content from being
+        // clipped by a container still on its way out.
+        // Which spatial token a pill morph uses is now a setting
+        // (Settings > Shell > Motion), since it was always the one
+        // subjective call in the motion system.
+        readonly property int pillDuration: Config.settings.islandSnappy
+            ? Appearance.anim.durations.fastSpatial
+            : Appearance.anim.durations.defaultSpatial
+        readonly property var pillCurve: Config.settings.islandSnappy
+            ? Appearance.anim.curves.fastSpatial
+            : Appearance.anim.curves.defaultSpatial
 
         Behavior on implicitWidth {
             NumberAnimation {
-                duration: root.inMenu ? Appearance.anim.durations.menu : Appearance.anim.durations.expand
+                duration: root.inMenu ? Appearance.anim.durations.menu : island.pillDuration
                 easing.type: Easing.BezierSpline
-                easing.bezierCurve: root.inMenu ? Appearance.anim.curves.emphasized : Appearance.anim.curves.expressive
+                easing.bezierCurve: root.inMenu ? Appearance.anim.curves.emphasized : island.pillCurve
             }
         }
         Behavior on implicitHeight {
             NumberAnimation {
-                duration: root.inMenu ? Appearance.anim.durations.menu : Appearance.anim.durations.expand
+                duration: root.inMenu ? Appearance.anim.durations.menu : island.pillDuration
                 easing.type: Easing.BezierSpline
-                easing.bezierCurve: root.inMenu ? Appearance.anim.curves.emphasized : Appearance.anim.curves.expressive
+                easing.bezierCurve: root.inMenu ? Appearance.anim.curves.emphasized : island.pillCurve
             }
         }
+        // Radius tracks whichever geometry animation is actually running.
+        // It used to be pinned at 500ms regardless, so on a pill morph
+        // the corners were still rounding for 150ms after the box had
+        // stopped -- subtle, but it is the kind of thing that reads as
+        // "not quite together" without being nameable.
         Behavior on radius {
             NumberAnimation {
-                duration: Appearance.anim.durations.expand
+                duration: root.inMenu ? Appearance.anim.durations.menu : island.pillDuration
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Appearance.anim.curves.emphasized
             }
         }
         Behavior on border.color {
             ColorAnimation {
-                duration: Appearance.anim.durations.normal
+                duration: Appearance.anim.durations.slowEffects
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Appearance.anim.curves.slowEffects
             }
         }
 
@@ -435,7 +627,11 @@ PanelWindow {
             onHoveredChanged: {
                 if (hovered) {
                     unhoverDelay.stop();
-                    root.hovering = true;
+                    // Not while a menu has the island panel-sized: that
+                    // hover belongs to the panel, not the pill. See
+                    // onMenuGrabChanged.
+                    if (!root.menuGrab)
+                        root.hovering = true;
                 } else {
                     unhoverDelay.restart();
                 }
@@ -481,7 +677,7 @@ PanelWindow {
 
             onWheel: wheel => {
                 if (root.islandState === "idle" || root.islandState === "hover")
-                    Audio.setVolume(Audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05));
+                    Audio.setVolume(Audio.volume + (wheel.angleDelta.y > 0 ? 1 : -1) * (Config.settings.volumeStep / 100));
                 else
                     wheel.accepted = false;
             }
@@ -584,7 +780,7 @@ PanelWindow {
                     anchors.horizontalCenterOffset: idleContent.chipBlock / 2
                     text: Time.time
                     font.family: Appearance.font.family
-                    font.pixelSize: 18
+                    font.pixelSize: Appearance.font.px(18)
                     font.weight: 800
 
                     Behavior on anchors.horizontalCenterOffset {
@@ -610,7 +806,7 @@ PanelWindow {
                     MaterialIcon {
                         anchors.verticalCenter: parent.verticalCenter
                         text: Activities.primary?.icon ?? "bolt"
-                        font.pixelSize: 16
+                        font.pixelSize: Appearance.font.px(16)
                         color: Colors.accent
                     }
 
@@ -618,7 +814,7 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         text: Activities.primary?.value ?? ""
                         visible: text !== ""
-                        font.pixelSize: 14
+                        font.pixelSize: Appearance.font.px(14)
                         font.weight: 700
                         color: Colors.accent
                     }
@@ -629,7 +825,7 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         text: `+${Activities.count - 1}`
                         visible: Activities.count > 1
-                        font.pixelSize: 11
+                        font.pixelSize: Appearance.font.px(11)
                         font.weight: 700
                         color: Colors.subtext
                     }
@@ -735,13 +931,13 @@ PanelWindow {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: Time.time
                         font.family: Appearance.font.family
-                        font.pixelSize: 17
+                        font.pixelSize: Appearance.font.px(17)
                         font.weight: 800
                     }
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: Time.dateStr
-                        font.pixelSize: 11
+                        font.pixelSize: Appearance.font.px(11)
                         color: Colors.subtext
                     }
                 }
@@ -823,7 +1019,7 @@ PanelWindow {
             sourceComponent: Item {
                 id: biRoot
 
-                readonly property int outerGap: 40
+                readonly property int outerGap: Config.settings.bigIslandGap
                 // Left and right slots are always the SAME width (whichever
                 // of workspaces/the right-side row is currently wider) --
                 // that's what keeps the clock genuinely centered on the
@@ -869,7 +1065,7 @@ PanelWindow {
                                     values: [...Hyprland.workspaces.values]
                                         .filter(w => w.id > 0 && w.monitor?.name === Hyprland.monitorFor(root.modelData)?.name)
                                         .sort((a, b) => a.id - b.id)
-                                        .slice(0, 5)
+                                        .slice(0, Config.settings.maxWorkspaces)
                                 }
 
                                 Item {
@@ -893,7 +1089,7 @@ PanelWindow {
                                     MonoText {
                                         anchors.centerIn: parent
                                         text: wsItem.modelData.id
-                                        font.pixelSize: 13
+                                        font.pixelSize: Appearance.font.px(13)
                                         font.weight: 700
                                         color: wsItem.focused ? Colors.accentFg : Colors.subtext
                                     }
@@ -922,7 +1118,7 @@ PanelWindow {
                         Layout.alignment: Qt.AlignVCenter
                         text: Time.time
                         font.family: Appearance.font.family
-                        font.pixelSize: 18
+                        font.pixelSize: Appearance.font.px(18)
                         font.weight: 800
                     }
 
@@ -941,10 +1137,23 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 16
 
+                            // Tray first, so the shell's own controls
+                            // (sound/battery/power) stay pinned to the
+                            // right edge where they've always been --
+                            // an app registering or quitting shifts the
+                            // tray, not the things you aim for by muscle
+                            // memory. Collapses to nothing when empty.
+                            TrayRow {
+                                visible: Config.settings.showTray && SystemTray.items.values.length > 0
+                                anchors.verticalCenter: parent.verticalCenter
+                                iconSize: Config.settings.trayIconSize
+                                itemSize: Config.settings.trayIconSize + 5
+                            }
+
                             MaterialIcon {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: Audio.muted ? "volume_off" : "volume_up"
-                                font.pixelSize: 18
+                                font.pixelSize: Appearance.font.px(18)
                                 color: Audio.muted ? Colors.subtext : Colors.text
 
                                 HoverHandler {
@@ -966,7 +1175,7 @@ PanelWindow {
                             MaterialIcon {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "power_settings_new"
-                                font.pixelSize: 18
+                                font.pixelSize: Appearance.font.px(18)
                                 color: Colors.danger
 
                                 HoverHandler {
@@ -1000,7 +1209,7 @@ PanelWindow {
                 MaterialIcon {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Audio.muted ? "volume_off" : "volume_up"
-                    font.pixelSize: 20
+                    font.pixelSize: Appearance.font.px(20)
                     color: Audio.muted ? Colors.subtext : Colors.text
 
                     TapHandler {
@@ -1021,7 +1230,7 @@ PanelWindow {
                     text: Math.round(Audio.volume * 100) + "%"
                     width: 44
                     horizontalAlignment: Text.AlignRight
-                    font.pixelSize: 14
+                    font.pixelSize: Appearance.font.px(14)
                     font.weight: 600
                     color: Colors.subtext
                 }
@@ -1075,7 +1284,7 @@ PanelWindow {
                         width: parent.width
                         text: GlobalState.islandNotif?.summary ?? ""
                         elide: Text.ElideRight
-                        font.pixelSize: 15
+                        font.pixelSize: Appearance.font.px(15)
                         font.weight: 600
                     }
                     StyledText {
@@ -1084,7 +1293,7 @@ PanelWindow {
                         elide: Text.ElideRight
                         maximumLineCount: 1
                         textFormat: Text.StyledText
-                        font.pixelSize: 13
+                        font.pixelSize: Appearance.font.px(13)
                         color: Colors.subtext
                     }
                 }
@@ -1148,6 +1357,33 @@ PanelWindow {
             shown: root.islandState === "media"
 
             sourceComponent: MediaPlayerPopup {}
+        }
+
+        // A tray item's DBus menu. Reached only by clicking a TrayRow
+        // icon -- there is no keybind, because "the menu of the third
+        // icon along" isn't a thing you can bind.
+        Section {
+            id: traySection
+            shown: root.islandState === "tray"
+
+            sourceComponent: TrayMenuContent {}
+        }
+
+        Section {
+            id: emojiSection
+            shown: root.islandState === "emoji"
+
+            sourceComponent: EmojiPicker {}
+        }
+
+        // Laziness earns its keep here more than anywhere else: this one
+        // parses a ~700KB table and merges ~11k rows on first open. It
+        // stays loaded afterwards, so that cost is paid once per shell.
+        Section {
+            id: glyphSection
+            shown: root.islandState === "glyph"
+
+            sourceComponent: GlyphPicker {}
         }
     }
 }

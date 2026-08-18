@@ -30,13 +30,13 @@ StyledRect {
         MaterialIcon {
             anchors.verticalCenter: parent.verticalCenter
             text: root.icon
-            font.pixelSize: 18
+            font.pixelSize: Appearance.font.px(18)
             color: Colors.accent
         }
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
             text: root.title
-            font.pixelSize: 13
+            font.pixelSize: Appearance.font.px(13)
             font.weight: 700
             color: Colors.subtext
         }

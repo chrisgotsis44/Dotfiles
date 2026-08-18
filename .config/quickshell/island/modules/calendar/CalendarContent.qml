@@ -66,7 +66,7 @@ Item {
             StyledText {
                 anchors.centerIn: parent
                 text: Qt.formatDate(root.shown, "MMMM yyyy")
-                font.pixelSize: 16
+                font.pixelSize: Appearance.font.px(16)
                 font.weight: 700
 
                 HoverHandler {
@@ -95,7 +95,7 @@ Item {
                     width: 46
                     horizontalAlignment: Text.AlignHCenter
                     text: modelData
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.font.px(12)
                     font.weight: 600
                     color: Colors.faint
                 }
@@ -125,7 +125,7 @@ Item {
                         MonoText {
                             anchors.centerIn: parent
                             text: parent.parent.modelData.n
-                            font.pixelSize: 14
+                            font.pixelSize: Appearance.font.px(14)
                             font.weight: parent.parent.modelData.today ? 700 : 400
                             color: parent.parent.modelData.today ? Colors.accentFg
                                  : parent.parent.modelData.inMonth ? Colors.text

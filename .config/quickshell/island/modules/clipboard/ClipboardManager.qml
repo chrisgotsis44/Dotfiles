@@ -25,7 +25,7 @@ Item {
         let list = Clipboard.entries;
         if (q)
             list = list.filter(e => e.preview.toLowerCase().includes(q));
-        return list.slice(0, 60);
+        return list.slice(0, Config.settings.clipboardLimit);
     }
 
     function copyEntry(entry: var): void {
@@ -79,7 +79,7 @@ Item {
                 MaterialIcon {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "content_paste"
-                    font.pixelSize: 20
+                    font.pixelSize: Appearance.font.px(20)
                     color: Colors.subtext
                 }
 
@@ -89,7 +89,7 @@ Item {
                     width: parent.width - 36
                     color: Colors.text
                     font.family: Appearance.font.family
-                    font.pixelSize: 16
+                    font.pixelSize: Appearance.font.px(16)
                     clip: true
 
                     onTextChanged: list.currentIndex = 0
@@ -102,7 +102,7 @@ Item {
                     StyledText {
                         visible: search.text === ""
                         text: "Search clipboard…"
-                        font.pixelSize: 16
+                        font.pixelSize: Appearance.font.px(16)
                         color: Colors.faint
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -124,7 +124,7 @@ Item {
                 anchors.centerIn: parent
                 visible: list.count === 0
                 text: search.text !== "" ? "No matches" : "Clipboard history is empty"
-                font.pixelSize: 14
+                font.pixelSize: Appearance.font.px(14)
                 color: Colors.faint
             }
 
@@ -180,7 +180,7 @@ Item {
                         visible: !entryItem.modelData.isImage
                         anchors.verticalCenter: parent.verticalCenter
                         text: "notes"
-                        font.pixelSize: 20
+                        font.pixelSize: Appearance.font.px(20)
                         color: Colors.subtext
                     }
 
@@ -193,7 +193,7 @@ Item {
                             width: parent.width
                             text: entryItem.modelData.isImage ? "Image" : entryItem.modelData.preview
                             elide: Text.ElideRight
-                            font.pixelSize: 15
+                            font.pixelSize: Appearance.font.px(15)
                             font.weight: entryItem.modelData.isImage ? 600 : 400
                         }
                         MonoText {
@@ -201,7 +201,7 @@ Item {
                             visible: entryItem.modelData.isImage
                             text: entryItem.modelData.ext + " · " + entryItem.modelData.dims + " · " + entryItem.modelData.size
                             elide: Text.ElideRight
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.font.px(12)
                             color: Colors.subtext
                         }
                     }

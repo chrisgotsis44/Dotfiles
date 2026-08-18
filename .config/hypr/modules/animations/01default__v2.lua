@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  JaKooLit — Default v2 (legacy)
+--  The older JaKooLit set. Windows POP in rather than slide, with a genuinely
+--  bouncy curve, and the border loops. Livelier and less tidy than 00default.
+--  Use when: you want visible bounce on every window open.
+-- ==================================================================== --
+
 -- /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  #
 
 -- old animations
@@ -23,3 +30,18 @@ hl.animation({ leaf = "borderangle", enabled = true, speed = 100, bezier = "line
 hl.animation({ leaf = "fade", enabled = true, speed = 5, bezier = "overshot" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "wind" })
 hl.animation({ leaf = "windows", enabled = true, speed = 5, bezier = "bounce", style = "popin" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- Layer surfaces (bar, launcher, notifications, the settings overlay) had no
+-- animation at all here, so they were the one thing that snapped. Fade, not
+-- slide: these surfaces run their own entrance animations internally and a
+-- compositor-side slide fights them.
+-- glowangle/shadowangle are 0.56's siblings of borderangle: same rotation, for
+-- decoration:glow:* and the shadow. Harmless when glow is off.
+hl.animation({ leaf = "layersIn", enabled = true, speed = 3, bezier = "overshot", style = "fade" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 2.4, bezier = "winOut", style = "fade" })
+hl.animation({ leaf = "glowangle", enabled = true, speed = 100, bezier = "default", style = "loop" })
+hl.animation({ leaf = "shadowangle", enabled = true, speed = 100, bezier = "default", style = "loop" })
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "overshot" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "overshot" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "overshot" })

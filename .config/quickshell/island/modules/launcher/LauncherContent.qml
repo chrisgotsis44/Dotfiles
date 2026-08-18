@@ -6,21 +6,25 @@ import Quickshell.Widgets
 import qs.config
 import qs.services
 import qs.components
-import "Emoji.js" as Emoji
 
 // Search bar on top, results below. Enter activates the highlighted
 // entry, arrows navigate, Escape closes. Rendered inside the island
 // (transparent root — the island supplies the panel).
 //
-// Three modes, chosen by a leading character rather than a mode switch,
+// Two modes, chosen by a leading character rather than a mode switch,
 // so there is nothing to remember beyond the prefix itself:
 //
 //   (none)   applications, ranked by match quality then launch count
 //   =        calculator          =8*1024      Enter copies the result
-//   :        emoji picker        :rocket      Enter copies the glyph
 //
-// Every mode produces the same result shape (kind/title/subtitle/payload)
-// so the list below stays one delegate rather than three.
+// A ":" emoji mode used to live here too. It is now its own island menu
+// on SUPER+, (with Unicode symbols and Nerd Font icons alongside it on
+// SUPER+.) -- see modules/pickers. Searching thousands of glyphs has
+// nothing to do with launching an app, and it made the launcher's result
+// shape carry a third variant for the sake of one prefix.
+//
+// Both modes produce the same result shape (kind/title/subtitle/payload)
+// so the list below stays one delegate rather than two.
 Item {
     id: root
 
@@ -31,8 +35,6 @@ Item {
     readonly property string mode: {
         if (root.query.startsWith("="))
             return "calc";
-        if (root.query.startsWith(":"))
-            return "emoji";
         return "apps";
     }
     // Everything after the prefix.
@@ -107,37 +109,6 @@ Item {
             ];
         }
 
-        if (root.mode === "emoji") {
-            const t = root.term.toLowerCase().trim();
-            let hits = Emoji.list;
-            if (t !== "") {
-                // A whole-word keyword hit outranks a mid-word name hit.
-                // Without that, ":ok" buries 👍 (keyword "ok") under
-                // "cooked rice" and "cookie", which merely contain the
-                // letters -- the keyword is the deliberate signal and the
-                // substring is an accident.
-                const rank = x => {
-                    if (x.n === t)
-                        return 0;
-                    if (x.n.startsWith(t))
-                        return 1;
-                    if ((x.k ?? "").split(" ").indexOf(t) !== -1)
-                        return 2;
-                    if (x.n.includes(t))
-                        return 3;
-                    return 4;
-                };
-                hits = hits.filter(x => x.n.includes(t) || (x.k !== undefined && x.k.includes(t))).sort((a, b) => rank(a) - rank(b) || a.n.length - b.n.length || a.n.localeCompare(b.n));
-            }
-            return hits.slice(0, 60).map(x => ({
-                        kind: "emoji",
-                        glyph: x.e,
-                        title: x.n,
-                        subtitle: x.k ?? "",
-                        payload: x.e
-                    }));
-        }
-
         const q = root.term.toLowerCase().trim();
         let apps = [...DesktopEntries.applications.values].filter(a => !a.noDisplay);
 
@@ -163,7 +134,7 @@ Item {
             apps.sort((a, b) => byUsage(a, b) || a.name.localeCompare(b.name));
         }
 
-        return apps.slice(0, 50).map(a => ({
+        return apps.slice(0, Config.settings.launcherMaxResults).map(a => ({
                     kind: "app",
                     entry: a,
                     title: a.name,
@@ -234,8 +205,8 @@ Item {
 
                 MaterialIcon {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.mode === "calc" ? "calculate" : root.mode === "emoji" ? "mood" : "search"
-                    font.pixelSize: 20
+                    text: root.mode === "calc" ? "calculate" : "search"
+                    font.pixelSize: Appearance.font.px(20)
                     color: root.mode === "apps" ? Colors.subtext : Colors.accent
                 }
 
@@ -245,7 +216,7 @@ Item {
                     width: parent.width - 36
                     color: Colors.text
                     font.family: Appearance.font.family
-                    font.pixelSize: 16
+                    font.pixelSize: Appearance.font.px(16)
                     clip: true
 
                     onTextChanged: list.currentIndex = 0
@@ -257,8 +228,8 @@ Item {
 
                     StyledText {
                         visible: search.text === ""
-                        text: "Search apps…    = calculator    : emoji"
-                        font.pixelSize: 16
+                        text: "Search apps…    = calculator"
+                        font.pixelSize: Appearance.font.px(16)
                         color: Colors.faint
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -266,16 +237,16 @@ Item {
             }
         }
 
-        // Only reachable in the two prefix modes, and only when nothing
+        // Only reachable in calculator mode, and only when nothing
         // matched -- an empty list with no explanation reads as broken,
         // especially for a half-typed expression like "=8*".
         StyledText {
             width: parent.width
             visible: root.mode !== "apps" && root.results.length === 0 && root.term.trim() !== ""
-            text: root.mode === "calc" ? "Not a valid expression" : "No emoji matches"
+            text: "Not a valid expression"
             horizontalAlignment: Text.AlignHCenter
             topPadding: 20
-            font.pixelSize: 14
+            font.pixelSize: Appearance.font.px(14)
             color: Colors.subtext
         }
 
@@ -308,8 +279,8 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 12
 
-                    // One slot, three fillings: an app icon, the emoji
-                    // itself at display size, or a calculator glyph.
+                    // One slot, two fillings: an app icon or a calculator
+                    // glyph.
                     Item {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 34
@@ -321,18 +292,11 @@ Item {
                             source: resultItem.modelData.kind === "app" ? Quickshell.iconPath(resultItem.modelData.entry.icon, "application-x-executable") : ""
                         }
 
-                        StyledText {
-                            anchors.centerIn: parent
-                            visible: resultItem.modelData.kind === "emoji"
-                            text: resultItem.modelData.kind === "emoji" ? resultItem.modelData.glyph : ""
-                            font.pixelSize: 26
-                        }
-
                         MaterialIcon {
                             anchors.centerIn: parent
                             visible: resultItem.modelData.kind === "calc"
                             text: "calculate"
-                            font.pixelSize: 24
+                            font.pixelSize: Appearance.font.px(24)
                             color: Colors.accent
                         }
                     }
@@ -346,7 +310,7 @@ Item {
                             width: parent.width
                             text: resultItem.modelData.title
                             elide: Text.ElideRight
-                            font.pixelSize: resultItem.modelData.kind === "calc" ? 20 : 15
+                            font.pixelSize: Appearance.font.px(resultItem.modelData.kind === "calc" ? 20 : 15)
                             font.weight: resultItem.modelData.kind === "calc" ? 700 : 600
                             color: resultItem.modelData.kind === "calc" ? Colors.accent : Colors.text
                         }
@@ -355,7 +319,7 @@ Item {
                             visible: text !== ""
                             text: resultItem.modelData.subtitle
                             elide: Text.ElideRight
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.font.px(12)
                             color: Colors.subtext
                         }
                     }

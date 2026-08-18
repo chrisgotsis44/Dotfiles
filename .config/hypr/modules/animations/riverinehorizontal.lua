@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  Riverine — Horizontal
+--  Riverine with horizontal workspaces and layers sliding in from the RIGHT --
+--  tuned for a right-hand sidebar.
+--  Use when: you want Riverine but your workspaces read left-to-right.
+-- ==================================================================== --
+
 hl.config({ animations = { enabled = true } })
 
 hl.curve("md3_decel", { type = "bezier", points = { {0.05, 0.7}, {0.1, 1} } })
@@ -22,3 +29,12 @@ hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 3, bezier = "m
 
 -- Fade
 hl.animation({ leaf = "fade", enabled = true, speed = 3, bezier = "md3_decel" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- 0.56 can animate the scratchpad's entrance and exit separately; exit is
+-- quicker, since you are already looking away from it.
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "md3_decel" })
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 3, bezier = "md3_decel", style = "slide" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.4, bezier = "md3_accel", style = "slide" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "md3_decel" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "md3_decel" })

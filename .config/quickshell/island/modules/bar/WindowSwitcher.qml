@@ -85,7 +85,7 @@ Item {
                         text: card.modelData?.title ?? ""
                         elide: Text.ElideRight
                         maximumLineCount: 1
-                        font.pixelSize: 11
+                        font.pixelSize: Appearance.font.px(11)
                         color: card.current ? Colors.text : Colors.subtext
                     }
                 }

@@ -1,12 +1,30 @@
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import Quickshell.Services.SystemTray
 import QtQuick
 import qs.services
+import qs.config
 import qs.modules.bar
 import qs.modules.wallpaper
+import qs.modules.settings
 
 ShellRoot {
+    // Bring the StatusNotifierWatcher up at launch.
+    //
+    // Owning `org.kde.StatusNotifierWatcher` on the session bus is a side
+    // effect of the SystemTray singleton being constructed, and a QML
+    // singleton is only constructed on first access. Every TrayRow lives
+    // inside a lazily-loaded Section, so without this the watcher would
+    // not exist until the first time you hovered the pill -- and an SNI
+    // client that starts before the watcher, then never re-registers when
+    // the name finally appears, would be invisible for the rest of the
+    // session. Autostarted tray apps are exactly that case: they race the
+    // shell at login and lose.
+    QtObject {
+        Component.onCompleted: void SystemTray.items
+    }
+
     // One island bar per screen. Every menu (Control Center, launcher,
     // calendar, power) lives INSIDE the island — there are no popup
     // windows, the island morphs around whatever is open.
@@ -66,12 +84,14 @@ ShellRoot {
         }
     }
 
-    // Full-screen invisible layer that closes any open menu when you
-    // click outside the island. Sits on the Top layer; the bar jumps to
-    // the Overlay layer while a menu is open, so the island always
-    // stacks above this catcher.
+    // The Settings panel (SUPER+S) -- like the wallpaper picker, its own
+    // centered overlay window rather than a Section the pill morphs
+    // into: a settings surface is a place you stay and adjust several
+    // things, not a state the island passes through. Same lazy-then-
+    // sticky Loader and same Exclusive keyboard focus reasoning as the
+    // picker above (Escape must work on the first press).
     PanelWindow {
-        visible: GlobalState.anyMenuOpen
+        visible: GlobalState.settingsOpen
         anchors {
             top: true
             bottom: true
@@ -80,14 +100,38 @@ ShellRoot {
         }
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: WlrLayer.Top
-        WlrLayershell.namespace: "qs-island-dismiss"
+        focusable: true
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.namespace: "qs-island-settings"
 
-        MouseArea {
+        Loader {
+            id: settingsLoader
             anchors.fill: parent
-            onPressed: GlobalState.closeAllMenus()
+            active: false
+            focus: true
+
+            Connections {
+                target: GlobalState
+                function onSettingsOpenChanged(): void {
+                    if (GlobalState.settingsOpen)
+                        settingsLoader.active = true;
+                }
+            }
+
+            sourceComponent: SettingsPanel {
+                focus: true
+            }
         }
     }
+
+    // Click-away dismissal used to live here, as a full-screen catcher
+    // window on WlrLayer.Top sitting under the bar's Overlay layer. It
+    // could never work: an open menu makes the island's surface take
+    // exclusive keyboard focus, and Hyprland responds by forcing ALL
+    // pointer events onto the exclusive surface, so no lower layer is
+    // ever hit-tested. It now lives inside the island's own window --
+    // see `backdrop` in modules/bar/Bar.qml.
 
     // External control:  qs -c island ipc call shell <function>
     IpcHandler {
@@ -117,6 +161,15 @@ ShellRoot {
         function toggleThemeMenu(): void {
             GlobalState.themeMenuOpen = !GlobalState.themeMenuOpen;
         }
+        // Character pickers, split out of the launcher's old ":" prefix:
+        //   bind = SUPER, comma,  exec, qs -c island ipc call shell toggleEmojiPicker
+        //   bind = SUPER, period, exec, qs -c island ipc call shell toggleGlyphPicker
+        function toggleEmojiPicker(): void {
+            GlobalState.emojiPickerOpen = !GlobalState.emojiPickerOpen;
+        }
+        function toggleGlyphPicker(): void {
+            GlobalState.glyphPickerOpen = !GlobalState.glyphPickerOpen;
+        }
         // Big Island mode: a static, wide three-section layout (workspaces
         // | clock | collapsible tray) that overrides hover-to-expand.
         //   bind = SUPER, B, exec, qs -c island ipc call shell toggleBigIsland
@@ -138,6 +191,11 @@ ShellRoot {
         //   bind = SUPER SHIFT, W, exec, qs -c island ipc call shell toggleWallpaperPicker
         function toggleWallpaperPicker(): void {
             GlobalState.wallpaperPickerOpen = !GlobalState.wallpaperPickerOpen;
+        }
+        // Settings panel -- centered overlay, not an island morph.
+        //   bind = SUPER, S, exec, qs -c island ipc call shell toggleSettings
+        function toggleSettings(): void {
+            GlobalState.settingsOpen = !GlobalState.settingsOpen;
         }
     }
 

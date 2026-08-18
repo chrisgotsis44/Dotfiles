@@ -42,7 +42,7 @@ StyledRect {
                 width: parent.width
                 text: root.notif.appName || "Notification"
                 elide: Text.ElideRight
-                font.pixelSize: 11
+                font.pixelSize: Appearance.font.px(11)
                 font.weight: 600
                 font.capitalization: Font.AllUppercase
                 color: Colors.faint
@@ -51,7 +51,7 @@ StyledRect {
                 width: parent.width
                 text: root.notif.summary
                 elide: Text.ElideRight
-                font.pixelSize: 14
+                font.pixelSize: Appearance.font.px(14)
                 font.weight: 600
             }
             StyledText {
@@ -62,7 +62,7 @@ StyledRect {
                 elide: Text.ElideRight
                 maximumLineCount: 2
                 textFormat: Text.StyledText
-                font.pixelSize: 13
+                font.pixelSize: Appearance.font.px(13)
                 color: Colors.subtext
             }
         }
@@ -74,7 +74,7 @@ StyledRect {
         anchors.top: parent.top
         anchors.topMargin: 12
         text: "close"
-        font.pixelSize: 16
+        font.pixelSize: Appearance.font.px(16)
         color: closeHover.hovered ? Colors.danger : Colors.faint
         opacity: hover.hovered ? 1 : 0
 

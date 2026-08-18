@@ -13,19 +13,19 @@ Row {
         anchors.verticalCenter: parent.verticalCenter
         visible: Weather.ready
         text: Weather.emoji
-        font.pixelSize: 14
+        font.pixelSize: Appearance.font.px(14)
     }
     MaterialIcon {
         anchors.verticalCenter: parent.verticalCenter
         visible: !Weather.ready
         text: "cloud"
-        font.pixelSize: 17
+        font.pixelSize: Appearance.font.px(17)
         color: Colors.text
     }
     MonoText {
         anchors.verticalCenter: parent.verticalCenter
         text: Weather.temp
-        font.pixelSize: 12
+        font.pixelSize: Appearance.font.px(12)
         font.weight: 600
         color: Colors.subtext
     }

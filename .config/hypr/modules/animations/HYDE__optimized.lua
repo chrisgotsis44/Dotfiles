@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  HyDE — Optimized
+--  hyprdots' curves retuned to be shorter and flatter -- less overshoot, quicker
+--  settle, aimed at feeling responsive on modest hardware.
+--  Use when: the other HyDE presets feel sluggish.
+-- ==================================================================== --
+
 -- /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  #
 --
 -- name "Optimized"
@@ -16,14 +23,13 @@ hl.curve("crazyshot", { type = "bezier", points = { {0.1, 1.22}, {0.68, 0.98} } 
 hl.curve("hyprnostretch", { type = "bezier", points = { {0.05, 0.82}, {0.03, 0.94} } })
 hl.curve("menu_decel", { type = "bezier", points = { {0.05, 0.82}, {0, 1} } })
 hl.curve("menu_accel", { type = "bezier", points = { {0.20, 0}, {0.82, 0.10} } })
-hl.curve("easeInOutCirc", { type = "bezier", points = { {0.75, 0}, {0.15, 1} } })
 hl.curve("easeOutCirc", { type = "bezier", points = { {0, 0.48}, {0.38, 1} } })
 hl.curve("easeOutExpo", { type = "bezier", points = { {0.10, 0.94}, {0.23, 0.98} } })
 hl.curve("softAcDecel", { type = "bezier", points = { {0.20, 0.20}, {0.15, 1} } })
 hl.curve("md2", { type = "bezier", points = { {0.30, 0}, {0.15, 1} } })
 
 hl.curve("OutBack", { type = "bezier", points = { {0.28, 1.40}, {0.58, 1} } })
-hl.curve("easeInOutCirc", { type = "bezier", points = { {0.78, 0}, {0.15, 1} } })
+hl.curve("easeInOutCirc", { type = "bezier", points = { {0.78, 0}, {0.15, 1} } }) -- was defined twice; the earlier {0.75,0} copy was dead and has been removed
 
 hl.animation({ leaf = "border", enabled = true, speed = 1.6, bezier = "liner" })
 hl.animation({ leaf = "borderangle", enabled = true, speed = 82, bezier = "liner", style = "once" })
@@ -37,3 +43,16 @@ hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 1.6, bezier = "men
 hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 1.8, bezier = "menu_accel" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 4.0, bezier = "menu_decel", style = "slide" })
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 2.3, bezier = "md3_decel", style = "slidefadevert 15%" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- glowangle/shadowangle are 0.56's siblings of borderangle: same rotation, for
+-- decoration:glow:* and the shadow. Harmless when glow is off.
+-- 0.56 can animate the scratchpad's entrance and exit separately; exit is
+-- quicker, since you are already looking away from it.
+hl.animation({ leaf = "glowangle", enabled = true, speed = 82, bezier = "default", style = "once" })
+hl.animation({ leaf = "shadowangle", enabled = true, speed = 82, bezier = "default", style = "once" })
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 2.5, bezier = "md3_decel" })
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 2.5, bezier = "md3_decel", style = "slidefadevert 15%" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.0, bezier = "md3_accel", style = "slidefadevert 15%" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 2.5, bezier = "md3_decel" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 2.5, bezier = "md3_decel" })

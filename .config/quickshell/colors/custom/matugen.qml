@@ -3,19 +3,19 @@ import QtQuick
 
 QtObject {
     // Background & Surfaces
-    readonly property color background: "#1c1015"
-    readonly property color onBackground: "#f5dce3"
-    readonly property color surface: "#1c1015"
-    readonly property color surfaceVariant: "#534248"
+    readonly property color background: "#091516"
+    readonly property color onBackground: "#d7e5e6"
+    readonly property color surface: "#091516"
+    readonly property color surfaceVariant: "#3c494a"
 
     // Primary Colors
-    readonly property color primary: "#ffb0cf"
-    readonly property color onPrimary: "#63003b"
-    readonly property color primaryContainer: "#8c0055"
+    readonly property color primary: "#00dbe8"
+    readonly property color onPrimary: "#00363a"
+    readonly property color primaryContainer: "#004f54"
 
     // Secondary Colors
-    readonly property color secondary: "#f2b7c1"
-    readonly property color onSecondary: "#4b252d"
+    readonly property color secondary: "#a4cddc"
+    readonly property color onSecondary: "#043542"
 
     // Add additional Material Design 3 tokens here as needed
 
@@ -34,28 +34,28 @@ QtObject {
     // by one M3 surface-container step so bg0 keeps some visible tint
     // instead of reading as plain black, ending on surface_bright (M3's
     // dedicated "brightest dark-mode surface" role) for bg4.
-    readonly property color bg0: "#25181d"
-    readonly property color bg1: "#291c21"
-    readonly property color bg2: "#34262b"
-    readonly property color bg3: "#403136"
-    readonly property color bg4: "#44353a"
+    readonly property color bg0: "#111e1f"
+    readonly property color bg1: "#152223"
+    readonly property color bg2: "#202c2d"
+    readonly property color bg3: "#2a3738"
+    readonly property color bg4: "#2f3b3d"
     // `on_surface` (M3's plain "text on background" role) is deliberately
     // near-neutral by design -- far less saturated than a hand-picked
     // theme's fg. `primary_fixed` is matugen's light-but-fully-chromatic
     // tone from the same hue family, and lands at roughly the same
     // saturation as catppuccin's fg -- so text/sliders/etc actually read
     // as "colored" instead of off-white.
-    readonly property color fg: "#ffd9e5"
+    readonly property color fg: "#77f5ff"
 
-    readonly property color grey0: "#534248"
-    readonly property color grey1: "#a08b92"
-    readonly property color grey2: "#d8c1c7"
+    readonly property color grey0: "#3c494a"
+    readonly property color grey1: "#869394"
+    readonly property color grey2: "#bbc9ca"
 
-    readonly property color green: "#ffb0cf"
+    readonly property color green: "#00dbe8"
     readonly property color red: "#ffb4ab"
     // Used only for the Themes menu's swatch preview (never Colors.qml's
     // own derivation) -- distinct hue families from green/primary so the
     // three dots don't collapse into near-duplicates.
-    readonly property color blue: "#f2b7c1"
-    readonly property color purple: "#ffb3b0"
+    readonly property color blue: "#a4cddc"
+    readonly property color purple: "#9bcdf0"
 }

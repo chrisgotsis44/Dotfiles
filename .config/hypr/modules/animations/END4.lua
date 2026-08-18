@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  end-4 / illogical-impulse
+--  Material 3 easing throughout (md3_decel / md3_accel), small popin 60% windows,
+--  and layers that slide in from the LEFT -- tuned for a left-hand sidebar shell.
+--  Use when: you want Material Design motion and mostly-vertical workspace flow.
+-- ==================================================================== --
+
 hl.config({ animations = { enabled = true } })
 
 hl.curve("linear", { type = "bezier", points = { {0, 0}, {1, 1} } })
@@ -32,3 +39,12 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 7, bezier = "menu_de
 -- animation = workspaces, 1, 7, menu_decel, slidefade 15%
 -- animation = specialWorkspace, 1, 3, md3_decel, slidefadevert 15%
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 3, bezier = "md3_decel", style = "slidevert" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- 0.56 can animate the scratchpad's entrance and exit separately; exit is
+-- quicker, since you are already looking away from it.
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "md3_decel" })
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 3, bezier = "md3_decel", style = "slidevert" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.4, bezier = "md3_accel", style = "slidevert" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "md3_decel" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "md3_decel" })

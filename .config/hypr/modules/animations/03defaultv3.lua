@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  Hyprland stock — v3
+--  Upstream Hyprland defaults with a near-full-size popin (95%) and workspaces
+--  that slide-fade 10%. The most restrained of the three 'default' presets.
+--  Use when: you want stock behaviour with a hint of workspace movement.
+-- ==================================================================== --
+
 hl.config({ animations = { enabled = true } })
 
 hl.curve("easeOutQuint", { type = "bezier", points = { {0.23, 1}, {0.32, 1} } })
@@ -22,3 +29,8 @@ hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 1.39, bezier = "a
 hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "almostLinear", style = "slidefade 10%" })
 hl.animation({ leaf = "workspacesIn", enabled = true, speed = 1.21, bezier = "almostLinear", style = "slidefade 10%" })
 hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "almostLinear", style = "slidefade 10%" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "easeOutQuint" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "easeOutQuint" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "easeOutQuint" })

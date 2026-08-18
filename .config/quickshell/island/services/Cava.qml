@@ -3,6 +3,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.config
 
 // Live audio spectrum for the idle pill's visualizer, straight from
 // cava.
@@ -36,7 +37,7 @@ Singleton {
     // shows twice this many bars -- bass in the middle, treble at both
     // ends. Kept low on purpose: at pill scale, more bars stop reading
     // as a spectrum and start reading as noise.
-    readonly property int bars: 4
+    readonly property int bars: Math.max(2, Math.min(12, Config.settings.cavaBars))
 
     // Latest frame, normalised 0..1, oldest-to-newest left to right.
     // Starts as a zero-filled array of the right length so consumers can

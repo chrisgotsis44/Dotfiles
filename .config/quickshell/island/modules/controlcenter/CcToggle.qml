@@ -53,7 +53,7 @@ StyledRect {
             MaterialIcon {
                 anchors.centerIn: parent
                 text: root.icon
-                font.pixelSize: 21
+                font.pixelSize: Appearance.font.px(21)
                 color: root.active ? Colors.accentFg : Colors.subtext
             }
 
@@ -73,7 +73,7 @@ StyledRect {
                 MaterialIcon {
                     anchors.centerIn: parent
                     text: root.badgeIcon
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.px(11)
                     color: Colors.accent
                 }
             }
@@ -88,14 +88,14 @@ StyledRect {
                 width: parent.width
                 text: root.label
                 elide: Text.ElideRight
-                font.pixelSize: 14
+                font.pixelSize: Appearance.font.px(14)
                 font.weight: 600
             }
             StyledText {
                 width: parent.width
                 text: root.sub
                 elide: Text.ElideRight
-                font.pixelSize: 12
+                font.pixelSize: Appearance.font.px(12)
                 color: root.active ? Colors.accent : Colors.subtext
             }
         }
@@ -108,7 +108,7 @@ StyledRect {
         anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
         text: "chevron_right"
-        font.pixelSize: 16
+        font.pixelSize: Appearance.font.px(16)
         color: mouse.containsMouse ? Colors.subtext : Colors.faint
     }
 

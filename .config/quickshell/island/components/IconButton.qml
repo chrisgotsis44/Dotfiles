@@ -29,7 +29,7 @@ StyledRect {
     MaterialIcon {
         anchors.centerIn: parent
         text: root.icon
-        font.pixelSize: root.iconSize
+        font.pixelSize: Appearance.font.px(root.iconSize)
         font.variableAxes: ({
             FILL: root.iconFill
         })

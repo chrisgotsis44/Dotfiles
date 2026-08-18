@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  Mahaveer — Me-2
+--  Close to 00default -- sliding windows, looping borderangle -- but adds explicit
+--  workspacesIn/Out so entering and leaving a workspace differ.
+--  Use when: you want 00default with directional workspace transitions.
+-- ==================================================================== --
+
 -- /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  #
 --
 -- name "Me-2"
@@ -26,3 +33,18 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "oversho
 -- animations for -git or version >0.42.0
 hl.animation({ leaf = "workspacesIn", enabled = true, speed = 5, bezier = "winIn", style = "slide" })
 hl.animation({ leaf = "workspacesOut", enabled = true, speed = 5, bezier = "winOut", style = "slide" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- Layer surfaces (bar, launcher, notifications, the settings overlay) had no
+-- animation at all here, so they were the one thing that snapped. Fade, not
+-- slide: these surfaces run their own entrance animations internally and a
+-- compositor-side slide fights them.
+-- glowangle/shadowangle are 0.56's siblings of borderangle: same rotation, for
+-- decoration:glow:* and the shadow. Harmless when glow is off.
+hl.animation({ leaf = "layersIn", enabled = true, speed = 3, bezier = "smoothOut", style = "fade" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 2.4, bezier = "winOut", style = "fade" })
+hl.animation({ leaf = "glowangle", enabled = true, speed = 100, bezier = "default", style = "loop" })
+hl.animation({ leaf = "shadowangle", enabled = true, speed = 100, bezier = "default", style = "loop" })
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 3, bezier = "smoothOut" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "smoothOut" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 3, bezier = "smoothOut" })

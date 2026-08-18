@@ -80,7 +80,7 @@ Item {
 
             StyledText {
                 text: "Themes"
-                font.pixelSize: 18
+                font.pixelSize: Appearance.font.px(18)
                 font.weight: 700
             }
 
@@ -161,7 +161,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             text: root.displayFor(row.modelData.name)
                             elide: Text.ElideRight
-                            font.pixelSize: 16
+                            font.pixelSize: Appearance.font.px(16)
                             font.weight: row.isActive ? 700 : 400
                         }
 
@@ -235,13 +235,13 @@ Item {
                 MaterialIcon {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "wallpaper"
-                    font.pixelSize: 48
+                    font.pixelSize: Appearance.font.px(48)
                     color: Colors.faint
                 }
                 StyledText {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "No wallpaper saved"
-                    font.pixelSize: 14
+                    font.pixelSize: Appearance.font.px(14)
                     color: Colors.faint
                 }
             }
@@ -277,7 +277,7 @@ Item {
                     id: hintText
                     anchors.centerIn: parent
                     text: "↑↓/jk Select · ↵ Apply · Esc Close"
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.font.px(12)
                     color: Qt.rgba(1, 1, 1, 0.7)
                 }
             }
@@ -308,7 +308,7 @@ Item {
                 StyledText {
                     text: root.displayFor(root.previewTheme)
                     color: preview.opacity > 0.01 ? "#ffffff" : Colors.text
-                    font.pixelSize: 24
+                    font.pixelSize: Appearance.font.px(24)
                     font.weight: 700
                 }
 
@@ -316,7 +316,7 @@ Item {
                     width: rightPanel.width - 36
                     text: rightPanel.wallpaper ? rightPanel.wallpaper.split("/").pop() : "Select a theme to apply it"
                     elide: Text.ElideRight
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.font.px(12)
                     color: preview.opacity > 0.01 ? Qt.rgba(1, 1, 1, 0.65) : Colors.subtext
                 }
             }

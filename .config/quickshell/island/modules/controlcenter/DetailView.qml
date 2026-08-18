@@ -34,7 +34,7 @@ Column {
         StyledText {
             anchors.centerIn: parent
             text: root.title
-            font.pixelSize: 16
+            font.pixelSize: Appearance.font.px(16)
             font.weight: 700
         }
 
@@ -114,7 +114,7 @@ Column {
             anchors.centerIn: parent
             visible: list.count === 0
             text: root.busy ? "Scanning…" : "Nothing found"
-            font.pixelSize: 14
+            font.pixelSize: Appearance.font.px(14)
             color: Colors.faint
         }
     }

@@ -1,8 +1,8 @@
 hl.config({
     general = {
         -- Decoration stuff
-        gaps_in = 9,
-        gaps_out = 18,
+        gaps_in = 8,
+        gaps_out = 12,
 
         -- Border
         border_size = 0,

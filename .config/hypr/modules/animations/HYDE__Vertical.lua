@@ -1,3 +1,10 @@
+-- ==================================================================== --
+--  HyDE — Vertical
+--  Vertical-first: workspaces slide-fade vertically 30%, scratchpad slides
+--  horizontally, layers pop. Pairs with a top/bottom bar and vertical workspace binds.
+--  Use when: your workspace keys feel 'up and down' rather than 'left and right'.
+-- ==================================================================== --
+
 -- /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  #
 --
 -- name "Vertical"
@@ -30,3 +37,12 @@ hl.animation({ leaf = "layers", enabled = true, speed = 1.5, bezier = "easeinout
 hl.animation({ leaf = "workspaces", enabled = true, speed = 3, bezier = "fluent_decel", style = "slidefadevert 30%" }) -- styles: slide, slidevert, fade, slidefade, slidefadevert
 
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 2, bezier = "fluent_decel", style = "slidefade 10%" })
+
+-- ---- Hyprland 0.56 additions ------------------------------------- --
+-- 0.56 can animate the scratchpad's entrance and exit separately; exit is
+-- quicker, since you are already looking away from it.
+hl.animation({ leaf = "fadeGlow", enabled = true, speed = 2, bezier = "fluent_decel" })
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 2, bezier = "fluent_decel", style = "slidefade 10%" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 1.6, bezier = "easeOutCubic", style = "slidefade 10%" })
+hl.animation({ leaf = "zoomFactor", enabled = true, speed = 2, bezier = "fluent_decel" })
+hl.animation({ leaf = "monitorAdded", enabled = true, speed = 2, bezier = "fluent_decel" })

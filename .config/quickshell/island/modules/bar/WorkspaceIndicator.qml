@@ -39,7 +39,7 @@ Row {
             values: [...Hyprland.workspaces.values]
                 .filter(w => w.id > 0 && w.monitor?.name === root.monitor?.name)
                 .sort((a, b) => a.id - b.id)
-                .slice(0, 5)
+                .slice(0, Config.settings.maxWorkspaces)
         }
 
         Rectangle {
@@ -96,7 +96,7 @@ Row {
             StyledText {
                 anchors.centerIn: parent
                 text: dot.modelData.id
-                font.pixelSize: 11
+                font.pixelSize: Appearance.font.px(11)
                 font.weight: 700
                 color: Colors.accentFg
                 opacity: dot.focused ? 1 : 0
